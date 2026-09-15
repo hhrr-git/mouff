@@ -757,6 +757,11 @@
   }
   .tinyBtn:hover{ background:#F3E8D2; }
 
+  .ftFieldRow input, .ftFieldRow select{ min-width:90px; }
+  .fsFormRow{ margin-bottom:16px; }
+  .fsFormRow label{ display:block; font-size:12px; font-weight:600; color:#4B4638; margin-bottom:6px; }
+  #formSubmitNav .adminNav-item{ text-align:left; }
+
   /* ---- Desktop 관리자센터 레이아웃 보정 ---- */
   @media (min-width:821px){
     /* dashMain의 1040px 폭에 갇히지 않고 관리자센터만 viewport 전체 폭을 사용 */
@@ -1051,6 +1056,7 @@
         <div class="dashNav-menu">
           <a href="#">공지사항</a>
           <a href="#" id="navApprovalLink">전자결재</a>
+          <a href="#" id="navFormSubmitLink">품의/결재 상신</a>
           <a href="#">문서함</a>
           <a href="#" id="navPermissionRequestLink">권한신청</a>
           <a href="#">조직도</a>
@@ -1135,6 +1141,27 @@
         </div>
       </div>
 
+      <!-- 품의/결재 상신 (전 직원 이용 가능) -->
+      <div id="formSubmitView" style="display:none;">
+        <div class="adminCenter">
+          <aside class="adminSidebar">
+            <button class="btn secondary" id="formSubmitBackBtn">← 대시보드로</button>
+            <nav class="adminNav" id="formSubmitNav">
+              <div class="employeeList-empty" style="color:var(--paper-dim); padding:12px;">등록된 결재양식이 없어요.</div>
+            </nav>
+          </aside>
+          <div class="adminContent">
+            <h2 class="dashGreeting" id="formSubmitTitle" style="margin-bottom:8px;">품의/결재 상신</h2>
+            <p class="sub" id="formSubmitSub" style="margin-bottom:24px;">왼쪽에서 올릴 문서를 선택해 주세요.</p>
+            <div class="adminCard" id="formSubmitCard" style="display:none;">
+              <div id="fsMsg" class="msg"></div>
+              <div id="fsFields"></div>
+              <button class="btn" id="fsSubmitBtn">상신</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ADMIN CENTER -->
       <div id="permissionRequestView" style="display:none;">
         <button class="linkBtn" id="permissionRequestBackBtn">← 대시보드</button><h2 class="dashGreeting" style="margin:18px 0 8px;">권한신청</h2><p class="sub" style="margin-bottom:18px;">공통 메뉴 외에 업무에 필요한 권한만 신청해요. 현재 소속/직무에 신청자격이 있는 권한만 표시됩니다.</p>
@@ -1167,6 +1194,10 @@
                 <button class="adminNav-item" data-section="tax">세금계산서 관리</button>
                 <button class="adminNav-item" data-section="sales">매출·매입 관리</button>
                 <button class="adminNav-item" data-section="budget">예산관리</button>
+              </div>
+              <div class="adminNav-group">
+                <div class="adminNav-groupLabel">결재관리</div>
+                <button class="adminNav-item" data-section="formTemplates">결재양식 관리</button>
               </div>
               <div class="adminNav-group">
                 <div class="adminNav-groupLabel">보안/권한</div>
@@ -1424,6 +1455,49 @@
               <h2 class="dashGreeting" style="margin-bottom:8px;">예산관리</h2>
               <p class="sub" style="margin-bottom:24px;">준비 중이에요. 부서별/항목별 예산과 집행 현황을 관리하는 화면이 될 거예요.</p>
               <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 결재양식 관리 -->
+            <section class="adminSection" id="adminSection-formTemplates" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">결재양식 관리</h2>
+              <p class="sub" style="margin-bottom:24px;">직원이 상신할 문서의 카테고리·문서명·입력항목을 미리 만들어두세요. 여기서 만든 양식이 직원 화면의 "품의/결재 상신" 좌측 메뉴에 그대로 나타나요.</p>
+
+              <div class="adminCard">
+                <div id="ftMsg" class="msg"></div>
+                <div class="field">
+                  <label for="ftCategory">카테고리</label>
+                  <input type="text" id="ftCategory" placeholder="예: 재무/회계, 인사, 총무">
+                </div>
+                <div class="field">
+                  <label for="ftName">문서명</label>
+                  <input type="text" id="ftName" placeholder="예: 예산품의, 지출결의">
+                </div>
+
+                <label style="display:block; font-size:12px; font-weight:600; color:#4B4638; margin:16px 0 6px;">입력 항목</label>
+                <div class="empTableWrap">
+                  <table class="empRegTable">
+                    <thead>
+                      <tr><th>항목명</th><th>입력 형식</th><th>필수</th><th>선택지(드롭다운일 때, 쉼표로 구분)</th><th></th></tr>
+                    </thead>
+                    <tbody id="ftFieldBody"></tbody>
+                  </table>
+                </div>
+                <div class="btnRow">
+                  <button class="btn secondary" id="ftFieldAddBtn">+ 항목 추가</button>
+                </div>
+
+                <div class="btnRow" style="margin-top:18px;">
+                  <button class="btn" id="ftSaveBtn">저장</button>
+                  <button class="btn secondary" id="ftNewBtn">+ 새 양식 추가</button>
+                </div>
+              </div>
+
+              <div class="adminCard" style="margin-top:20px;">
+                <h3>등록된 결재양식</h3>
+                <ul class="employeeList" id="ftList">
+                  <li class="employeeList-empty">등록된 양식이 없어요.</li>
+                </ul>
+              </div>
             </section>
 
             <!-- 보안/권한 -->
@@ -2142,13 +2216,22 @@
   const adminView = document.getElementById('adminView');
   const approvalCenterView = document.getElementById('approvalCenterView');
   const permissionRequestView = document.getElementById('permissionRequestView');
+  const formSubmitView = document.getElementById('formSubmitView');
 
   function showDashSection(name){
     dashHome.style.display = name === 'home' ? 'block' : 'none';
     adminView.style.display = name === 'admin' ? 'block' : 'none';
     approvalCenterView.style.display = name === 'approval' ? 'block' : 'none';
     permissionRequestView.style.display = name === 'permissionRequest' ? 'block' : 'none';
+    formSubmitView.style.display = name === 'formSubmit' ? 'block' : 'none';
   }
+
+  document.getElementById('navFormSubmitLink').onclick = (e) => {
+    e.preventDefault();
+    showDashSection('formSubmit');
+    renderFormSubmitNav();
+  };
+  document.getElementById('formSubmitBackBtn').onclick = () => showDashSection('home');
 
   document.getElementById('adminCardBtn').onclick = (e) => {
     e.preventDefault();
@@ -2188,6 +2271,7 @@
       if(target === 'hrstandards') renderHrStandards();
       if(target === 'shareholders'){ populateShareholderBranchSelect(); }
       if(target === 'activity') renderActivityList();
+      if(target === 'formTemplates'){ resetFormTemplateFields(); renderFormTemplateList(); }
     };
   });
 
@@ -2331,7 +2415,7 @@
         listEl.innerHTML = '<li class="employeeList-empty">대기 중인 요청이 없어요.</li>';
         return;
       }
-      const typeLabel = { branch_delete: '사업장 정보 삭제', branch_create: '사업장 신규 등록', branch_update: '사업장 정보 수정' };
+      const typeLabel = { branch_delete: '사업장 정보 삭제', branch_create: '사업장 신규 등록', branch_update: '사업장 정보 수정', custom_submit: '품의/결재 상신' };
       listEl.innerHTML = pending.map(({id, data}) =>
         '<li class="approvalRow approvalRow-clickable" data-id="' + id + '">' +
         '<span>' +
@@ -2352,14 +2436,38 @@
   const branchFieldLabels = {
     branchName: '사업장 구분명', bizName: '상호(사업자명)', bizNumber: '사업자등록번호',
     ceoName: '대표자명', bizKind: '사업자 구분', corpNumber: '법인등록번호', openDate: '개업연월일',
-    address: '사업장 소재지', bizType: '업태', bizItem: '종목', isHQ: '대표 사업장'
+    address: '사업장 소재지', bizType: '업태', bizItem: '종목', isHQ: '대표 사업장',
+    status: '상태', pauseStart: '휴업 시작일', pauseEnd: '휴업 종료일', closeDate: '폐업일'
   };
+
+  // 저장 전(old)/후(newData)를 비교해서 "필드명: 이전값 → 새값" 형태의 문자열을 만들어요.
+  // 변경이력 detail 칸에 그대로 넣으면 뭐가 바뀌었는지 한눈에 보여요.
+  function diffFields(oldData, newData, labelMap){
+    if(!oldData) return '신규 등록';
+    const changes = [];
+    const keys = Object.keys(labelMap || newData);
+    for(const key of keys){
+      let ov = oldData[key];
+      let nv = newData[key];
+      if(typeof ov === 'boolean' || typeof nv === 'boolean'){
+        ov = ov ? '예' : '아니오';
+        nv = nv ? '예' : '아니오';
+      }
+      ov = ov === undefined || ov === null ? '' : String(ov);
+      nv = nv === undefined || nv === null ? '' : String(nv);
+      if(ov !== nv){
+        const label = (labelMap && labelMap[key]) || key;
+        changes.push(label + ': ' + (ov || '(없음)') + ' → ' + (nv || '(없음)'));
+      }
+    }
+    return changes.length ? changes.join(' / ') : '변경사항 없음';
+  }
 
   async function openApprovalDetail(reqId){
     const rec = await window.storage.get('approval:' + reqId).catch(() => null);
     if(!rec) return;
     const data = JSON.parse(rec.value);
-    const typeLabel = { branch_delete: '사업장 정보 삭제', branch_create: '사업장 신규 등록', branch_update: '사업장 정보 수정' };
+    const typeLabel = { branch_delete: '사업장 정보 삭제', branch_create: '사업장 신규 등록', branch_update: '사업장 정보 수정', custom_submit: '품의/결재 상신' };
 
     let docHtml = '';
     const payload = data.snapshot || data.payload;
@@ -2371,6 +2479,10 @@
         if(!val) return '';
         return '<div><span class="approvalDoc-label">' + branchFieldLabels[key] + '</span><span>' + val + '</span></div>';
       }).join('') + '</div>';
+    } else if(data.formData){
+      docHtml = '<div class="approvalDoc">' + data.formData.map(f =>
+        '<div><span class="approvalDoc-label">' + f.label + '</span><span>' + (f.value || '-') + '</span></div>'
+      ).join('') + '</div>';
     }
 
     document.getElementById('adModalBody').innerHTML =
@@ -2381,7 +2493,7 @@
       '<div><span class="approvalSummary-label">요청일</span><span>' + formatRequestedAt(data.requestedAt) + '</span></div>' +
       '<div><span class="approvalSummary-label">요청사유</span><span>' + (data.reason || '-') + '</span></div>' +
       '</div>' +
-      (docHtml ? '<h3 style="font-size:13px; margin:18px 0 8px;">' + (data.type === 'branch_delete' ? '삭제될 내용' : '등록/수정될 내용') + '</h3>' + docHtml : '');
+      (docHtml ? '<h3 style="font-size:13px; margin:18px 0 8px;">' + (data.type === 'branch_delete' ? '삭제될 내용' : (data.type === 'custom_submit' ? '상신 내용' : '등록/수정될 내용')) + '</h3>' + docHtml : '');
 
     document.getElementById('approvalDetailModal').dataset.reqId = reqId;
     document.getElementById('approvalDetailModal').style.display = 'flex';
@@ -2454,6 +2566,13 @@
     try{
       const id = currentBranchId || ('b' + Date.now());
 
+      // 수정인 경우, 저장 전 기존 값을 먼저 가져와둬요 (변경이력에 뭐가 바뀌었는지 남기기 위해)
+      let oldData = null;
+      if(currentBranchId){
+        const oldRec = await window.storage.get('branch:' + currentBranchId).catch(() => null);
+        if(oldRec) oldData = JSON.parse(oldRec.value);
+      }
+
       // 사업자등록번호 중복 체크 (자기 자신은 제외)
       const listResult = await window.storage.list('branch:');
       const keys = listResult ? listResult.keys : [];
@@ -2499,7 +2618,8 @@
         }
       }
       await window.storage.set('branch:' + id, JSON.stringify(data));
-      logActivity(currentBranchId ? '수정' : '등록', branchName, '사업장 정보');
+      const changeDetail = diffFields(oldData, data, branchFieldLabels);
+      logActivity(currentBranchId ? '수정' : '등록', branchName, changeDetail);
       msgEl.className = 'msg success';
       msgEl.textContent = '"' + branchName + '" 저장됐어요. 이어서 다른 사업장을 입력하실 수 있어요.';
       resetCompanyFields();
@@ -3040,6 +3160,238 @@
     const rows = await fetchActivities();
     exportRowsToExcel('mouff_변경이력.xlsx', ['일시','사용자','행위','대상','상세'],
       rows.map(r => [formatRequestedAt(r.at), r.actor || '-', r.action, r.target, r.detail || '']));
+  };
+
+  /* ================================================
+     결재양식 관리 (관리자) + 품의/결재 상신 (전 직원)
+     ================================================ */
+  let currentFormTemplateId = null;
+  let ftFieldSeq = 0;
+
+  function addFtFieldRow(field){
+    field = field || {};
+    ftFieldSeq++;
+    const tr = document.createElement('tr');
+    tr.className = 'ftFieldRow';
+    tr.innerHTML =
+      '<td><input type="text" class="ft-label" value="' + (field.label || '') + '" placeholder="예: 예산금액"></td>' +
+      '<td><select class="ft-type">' +
+        ['text','textarea','number','date','select'].map(t =>
+          '<option value="' + t + '"' + (field.type === t ? ' selected' : '') + '>' +
+          ({text:'한 줄 텍스트', textarea:'여러 줄 텍스트', number:'숫자', date:'날짜', select:'드롭다운(선택)'}[t]) +
+          '</option>').join('') +
+      '</select></td>' +
+      '<td style="text-align:center;"><input type="checkbox" class="ft-required" ' + (field.required ? 'checked' : '') + '></td>' +
+      '<td><input type="text" class="ft-options" value="' + (field.options ? field.options.join(', ') : '') + '" placeholder="예: 신규, 증액, 이월"></td>' +
+      '<td><button type="button" class="tinyBtn ft-removeRow">삭제</button></td>';
+    document.getElementById('ftFieldBody').appendChild(tr);
+    tr.querySelector('.ft-removeRow').onclick = () => tr.remove();
+  }
+
+  document.getElementById('ftFieldAddBtn').onclick = () => addFtFieldRow();
+
+  function resetFormTemplateFields(){
+    currentFormTemplateId = null;
+    document.getElementById('ftCategory').value = '';
+    document.getElementById('ftName').value = '';
+    document.getElementById('ftFieldBody').innerHTML = '';
+    document.getElementById('ftMsg').className = 'msg';
+    addFtFieldRow();
+  }
+  document.getElementById('ftNewBtn').onclick = resetFormTemplateFields;
+
+  async function fetchFormTemplates(){
+    const rows = [];
+    try{
+      const listResult = await window.storage.list('formTemplate:');
+      const keys = listResult ? listResult.keys : [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        rows.push({ id: key.replace('formTemplate:', ''), data: JSON.parse(rec.value) });
+      }
+    }catch(e){ /* ignore */ }
+    return rows;
+  }
+
+  document.getElementById('ftSaveBtn').onclick = async () => {
+    const category = document.getElementById('ftCategory').value.trim();
+    const name = document.getElementById('ftName').value.trim();
+    const msgEl = document.getElementById('ftMsg');
+    if(!category || !name){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '카테고리와 문서명을 입력해 주세요.';
+      return;
+    }
+    const fields = [];
+    document.querySelectorAll('#ftFieldBody .ftFieldRow').forEach((tr, i) => {
+      const label = tr.querySelector('.ft-label').value.trim();
+      if(!label) return;
+      fields.push({
+        id: 'f' + i,
+        label,
+        type: tr.querySelector('.ft-type').value,
+        required: tr.querySelector('.ft-required').checked,
+        options: tr.querySelector('.ft-options').value.split(',').map(s => s.trim()).filter(Boolean)
+      });
+    });
+    if(!fields.length){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '입력 항목을 최소 1개 이상 추가해 주세요.';
+      return;
+    }
+    try{
+      const id = currentFormTemplateId || ('ft' + Date.now());
+      await window.storage.set('formTemplate:' + id, JSON.stringify({ category, name, fields }));
+      logActivity(currentFormTemplateId ? '수정' : '등록', category + ' · ' + name, '결재양식');
+      msgEl.className = 'msg success';
+      msgEl.textContent = '"' + name + '" 저장됐어요.';
+      resetFormTemplateFields();
+      renderFormTemplateList();
+    }catch(e){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '저장 중 문제가 생겼어요. 다시 시도해 주세요.';
+    }
+  };
+
+  async function renderFormTemplateList(){
+    const listEl = document.getElementById('ftList');
+    listEl.innerHTML = '<li class="employeeList-empty">불러오는 중...</li>';
+    const rows = await fetchFormTemplates();
+    if(!rows.length){
+      listEl.innerHTML = '<li class="employeeList-empty">등록된 양식이 없어요.</li>';
+      return;
+    }
+    listEl.innerHTML = rows.map(({id, data}) =>
+      '<li class="branchRow" data-id="' + id + '">' +
+      '<span class="branchRow-main" style="cursor:pointer;">' +
+      '<span class="employeeList-name">' + data.category + ' · ' + data.name + '</span>' +
+      '<span class="employeeList-meta">항목 ' + (data.fields || []).length + '개</span>' +
+      '</span>' +
+      '<button class="branchRow-delete" data-id="' + id + '" data-name="' + data.category + ' · ' + data.name + '">삭제</button>' +
+      '</li>'
+    ).join('');
+    listEl.querySelectorAll('.branchRow-main').forEach(main => {
+      main.onclick = async () => {
+        const row = main.closest('.branchRow');
+        const rec = await window.storage.get('formTemplate:' + row.dataset.id);
+        const data = JSON.parse(rec.value);
+        currentFormTemplateId = row.dataset.id;
+        document.getElementById('ftCategory').value = data.category;
+        document.getElementById('ftName').value = data.name;
+        document.getElementById('ftFieldBody').innerHTML = '';
+        (data.fields || []).forEach(f => addFtFieldRow(f));
+        document.getElementById('ftMsg').className = 'msg';
+        window.scrollTo({top:0, behavior:'smooth'});
+      };
+    });
+    listEl.querySelectorAll('.branchRow-delete').forEach(btn => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        const ok = await showConfirm('"' + btn.dataset.name + '" 양식을 삭제할까요?\n이미 상신된 문서에는 영향이 없어요.');
+        if(!ok) return;
+        await window.storage.delete('formTemplate:' + btn.dataset.id).catch(() => null);
+        logActivity('삭제', btn.dataset.name, '결재양식');
+        renderFormTemplateList();
+      };
+    });
+  }
+
+  /* ---- 직원용: 품의/결재 상신 ---- */
+  let currentSubmitTemplate = null;
+
+  async function renderFormSubmitNav(){
+    const navEl = document.getElementById('formSubmitNav');
+    const rows = await fetchFormTemplates();
+    if(!rows.length){
+      navEl.innerHTML = '<div class="employeeList-empty" style="color:var(--paper-dim); padding:12px;">등록된 결재양식이 없어요.</div>';
+      return;
+    }
+    const byCategory = {};
+    rows.forEach(r => {
+      (byCategory[r.data.category] = byCategory[r.data.category] || []).push(r);
+    });
+    navEl.innerHTML = Object.keys(byCategory).map(cat =>
+      '<div class="adminNav-group">' +
+      '<div class="adminNav-groupLabel">' + cat + '</div>' +
+      byCategory[cat].map(r => '<button class="adminNav-item" data-id="' + r.id + '">' + r.data.name + '</button>').join('') +
+      '</div>'
+    ).join('');
+    navEl.querySelectorAll('.adminNav-item').forEach(btn => {
+      btn.onclick = () => {
+        navEl.querySelectorAll('.adminNav-item').forEach(b => b.classList.toggle('active', b === btn));
+        loadSubmitForm(btn.dataset.id);
+      };
+    });
+  }
+
+  async function loadSubmitForm(templateId){
+    const rec = await window.storage.get('formTemplate:' + templateId).catch(() => null);
+    if(!rec) return;
+    const data = JSON.parse(rec.value);
+    currentSubmitTemplate = { id: templateId, data };
+    document.getElementById('formSubmitTitle').textContent = data.category + ' · ' + data.name;
+    document.getElementById('formSubmitSub').textContent = '아래 항목을 채우고 상신하면, 전자결재로 승인 요청이 들어가요.';
+    document.getElementById('fsMsg').className = 'msg';
+    const fieldsHtml = data.fields.map(f => {
+      let inputHtml = '';
+      const req = f.required ? 'required' : '';
+      if(f.type === 'textarea'){
+        inputHtml = '<textarea rows="3" class="fs-input" data-id="' + f.id + '" ' + req + '></textarea>';
+      } else if(f.type === 'select'){
+        inputHtml = '<select class="fs-input" data-id="' + f.id + '" ' + req + '><option value="">선택</option>' +
+          (f.options || []).map(o => '<option>' + o + '</option>').join('') + '</select>';
+      } else {
+        const type = f.type === 'number' ? 'number' : (f.type === 'date' ? 'date' : 'text');
+        inputHtml = '<input type="' + type + '" class="fs-input" data-id="' + f.id + '" ' + req + '>';
+      }
+      return '<div class="fsFormRow"><label>' + f.label + (f.required ? ' *' : '') + '</label>' + inputHtml + '</div>';
+    }).join('');
+    document.getElementById('fsFields').innerHTML = fieldsHtml;
+    document.getElementById('formSubmitCard').style.display = 'block';
+  }
+
+  document.getElementById('fsSubmitBtn').onclick = async () => {
+    if(!currentSubmitTemplate) return;
+    const msgEl = document.getElementById('fsMsg');
+    const { id: templateId, data: tpl } = currentSubmitTemplate;
+    const formData = [];
+    let missing = false;
+    document.querySelectorAll('#fsFields .fs-input').forEach(el => {
+      const field = tpl.fields.find(f => f.id === el.dataset.id);
+      const value = el.value.trim();
+      if(field.required && !value) missing = true;
+      formData.push({ label: field.label, value });
+    });
+    if(missing){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '필수 항목(*)을 모두 입력해 주세요.';
+      return;
+    }
+    const btn = document.getElementById('fsSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = '상신 중...';
+    try{
+      const reqId = 'r' + Date.now();
+      await window.storage.set('approval:' + reqId, JSON.stringify({
+        type: 'custom_submit',
+        targetId: templateId,
+        targetLabel: tpl.category + ' · ' + tpl.name,
+        requestedBy: currentUserId || '알 수 없음',
+        requestedAt: new Date().toISOString(),
+        formData,
+        status: 'pending'
+      }));
+      logActivity('상신', tpl.category + ' · ' + tpl.name, '품의/결재 상신');
+      msgEl.className = 'msg success';
+      msgEl.textContent = '상신됐어요. 전자결재에서 진행 상황을 확인할 수 있어요.';
+      document.querySelectorAll('#fsFields .fs-input').forEach(el => el.value = '');
+    }catch(e){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '상신 중 문제가 생겼어요. 다시 시도해 주세요.';
+    }
+    btn.disabled = false;
+    btn.textContent = '상신';
   };
 
   document.getElementById('branchExcelBtn').onclick = async () => {
