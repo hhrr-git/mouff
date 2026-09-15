@@ -3084,6 +3084,7 @@
       const ssn = tr.querySelector('.ef-ssn').value.trim();
       const phone = tr.querySelector('.ef-phone').value.trim();
       const emergencyPhone=tr.querySelector('.ef-emergency').value.trim();
+      const emergencyRelation=tr.querySelector('.ef-emergencyRel').value.trim();
       const email = tr.querySelector('.ef-email').value.trim();
       const firstHireDate = tr.querySelector('.ef-firstHire').value;
       const hireDate = tr.querySelector('.ef-hire').value;
@@ -3122,7 +3123,7 @@
         logActivity('계정발급', name, '사원번호 ' + empNo + ' / 아이디 ' + loginId);
         tr.remove();
       }catch(e){
-        failed.push(name + ' — 저장 중 오류');
+        failed.push(name + ' — 저장 중 오류: ' + (e && e.message ? e.message : String(e)));
       }
     }
 
