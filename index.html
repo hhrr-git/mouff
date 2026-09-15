@@ -489,6 +489,24 @@
     color:#8A7A7E;
     padding:0 12px 4px;
   }
+  .adminSidebar .adminNav-groupLabel{
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    user-select:none;
+    padding:6px 12px;
+    border-radius:3px;
+  }
+  .adminSidebar .adminNav-groupLabel:hover{ background:var(--ink-2); }
+  .adminSidebar .adminNav-groupLabel::after{
+    content:'▾';
+    font-size:9px;
+    transition:transform .15s;
+    margin-left:6px;
+  }
+  .adminNav-group.collapsed .adminNav-groupLabel::after{ transform:rotate(-90deg); }
+  .adminNav-group.collapsed .adminNav-item{ display:none; }
   .adminNav-item{
     text-align:left;
     background:none;
@@ -1055,6 +1073,7 @@
         <div class="dashNav-brand">mouff</div>
         <div class="dashNav-menu">
           <a href="#">공지사항</a>
+          <a href="#" id="navGuideLink">가이드</a>
           <a href="#" id="navApprovalLink">전자결재</a>
           <a href="#" id="navFormSubmitLink">품의/결재 상신</a>
           <a href="#">문서함</a>
@@ -1162,6 +1181,24 @@
         </div>
       </div>
 
+      <!-- 가이드 (전 직원 열람) -->
+      <div id="guideView" style="display:none;">
+        <div class="adminCenter">
+          <aside class="adminSidebar">
+            <button class="btn secondary" id="guideBackBtn">← 대시보드로</button>
+            <nav class="adminNav" id="guideNav">
+              <div class="employeeList-empty" style="color:var(--paper-dim); padding:12px;">등록된 글이 없어요.</div>
+            </nav>
+          </aside>
+          <div class="adminContent">
+            <div id="guideReadArea">
+              <p class="sub">왼쪽에서 볼 글을 선택해 주세요.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       <!-- ADMIN CENTER -->
       <div id="permissionRequestView" style="display:none;">
         <button class="linkBtn" id="permissionRequestBackBtn">← 대시보드</button><h2 class="dashGreeting" style="margin:18px 0 8px;">권한신청</h2><p class="sub" style="margin-bottom:18px;">공통 메뉴 외에 업무에 필요한 권한만 신청해요. 현재 소속/직무에 신청자격이 있는 권한만 표시됩니다.</p>
@@ -1208,6 +1245,10 @@
                 <button class="adminNav-item" data-section="permissionRequests">권한신청 관리</button>
                 <button class="adminNav-item" data-section="levels">레벨 설정</button>
                 <button class="adminNav-item" data-section="accessLog">접근 이력</button>
+              </div>
+              <div class="adminNav-group">
+                <div class="adminNav-groupLabel">게시판관리</div>
+                <button class="adminNav-item" data-section="guideManage">가이드 관리</button>
               </div>
               <div class="adminNav-group">
                 <div class="adminNav-groupLabel">시스템</div>
@@ -1496,6 +1537,50 @@
                 <h3>등록된 결재양식</h3>
                 <ul class="employeeList" id="ftList">
                   <li class="employeeList-empty">등록된 양식이 없어요.</li>
+                </ul>
+              </div>
+            </section>
+
+            <!-- 가이드 관리 -->
+            <section class="adminSection" id="adminSection-guideManage" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">가이드 관리</h2>
+              <p class="sub" style="margin-bottom:24px;">회사 정책, 업무프로세스, 서식자료(사업자등록증·이메일 서명 등), 공지 같은 걸 올려두면 전 직원이 상단 "가이드" 메뉴에서 볼 수 있어요.</p>
+
+              <div class="adminCard">
+                <div id="guideMsg" class="msg"></div>
+                <div class="field">
+                  <label for="guideCategory">카테고리</label>
+                  <select id="guideCategory">
+                    <option>정책가이드</option>
+                    <option>업무프로세스</option>
+                    <option>서식자료</option>
+                    <option>공지사항</option>
+                    <option>기타</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="guideTitle">제목</label>
+                  <input type="text" id="guideTitle" placeholder="예: 연말정산 안내, 이메일 서명 양식">
+                </div>
+                <div class="field">
+                  <label for="guideContent">내용</label>
+                  <textarea id="guideContent" rows="6" placeholder="안내 내용을 입력하세요"></textarea>
+                </div>
+                <div class="field">
+                  <label for="guideFileInput">첨부파일 (선택, 이미지/PDF 등 작은 파일)</label>
+                  <input type="file" id="guideFileInput">
+                  <div id="guideFilePreview" style="font-size:12px; color:#8C8676; margin-top:6px;"></div>
+                </div>
+                <div class="btnRow">
+                  <button class="btn" id="guideSaveBtn">저장</button>
+                  <button class="btn secondary" id="guideNewBtn">+ 새 글 추가</button>
+                </div>
+              </div>
+
+              <div class="adminCard" style="margin-top:20px;">
+                <h3>등록된 가이드 글</h3>
+                <ul class="employeeList" id="guideAdminList">
+                  <li class="employeeList-empty">등록된 글이 없어요.</li>
                 </ul>
               </div>
             </section>
@@ -2217,6 +2302,7 @@
   const approvalCenterView = document.getElementById('approvalCenterView');
   const permissionRequestView = document.getElementById('permissionRequestView');
   const formSubmitView = document.getElementById('formSubmitView');
+  const guideView = document.getElementById('guideView');
 
   function showDashSection(name){
     dashHome.style.display = name === 'home' ? 'block' : 'none';
@@ -2224,6 +2310,7 @@
     approvalCenterView.style.display = name === 'approval' ? 'block' : 'none';
     permissionRequestView.style.display = name === 'permissionRequest' ? 'block' : 'none';
     formSubmitView.style.display = name === 'formSubmit' ? 'block' : 'none';
+    guideView.style.display = name === 'guide' ? 'block' : 'none';
   }
 
   document.getElementById('navFormSubmitLink').onclick = (e) => {
@@ -2232,6 +2319,13 @@
     renderFormSubmitNav();
   };
   document.getElementById('formSubmitBackBtn').onclick = () => showDashSection('home');
+
+  document.getElementById('navGuideLink').onclick = (e) => {
+    e.preventDefault();
+    showDashSection('guide');
+    renderGuideNav();
+  };
+  document.getElementById('guideBackBtn').onclick = () => showDashSection('home');
 
   document.getElementById('adminCardBtn').onclick = (e) => {
     e.preventDefault();
@@ -2251,6 +2345,14 @@
   document.getElementById('userPermSubmitBtn').onclick=async()=>{const reason=document.getElementById('userPermReason').value.trim();if(!reason){showAlert('신청사유를 입력해 주세요.');return;}const id='pr'+Date.now(),data={group:document.getElementById('userPermGroup').value,scope:document.getElementById('userPermScope').value,from:document.getElementById('userPermFrom').value,to:document.getElementById('userPermTo').value,reason,status:'승인대기',requestedAt:new Date().toISOString(),requester:'demo'};await window.storage.set('permissionRequest:'+id,JSON.stringify(data));logActivity('신청',data.group,'권한신청 / '+data.scope);showAlert('권한신청이 접수됐어요. 신청자격 검증 후 결재가 진행됩니다.');document.getElementById('userPermReason').value='';};
 
   const adminNavItems = document.querySelectorAll('.adminNav-item');
+
+  document.querySelectorAll('.adminSidebar .adminNav-groupLabel').forEach(label => {
+    const group = label.closest('.adminNav-group');
+    // 지금 활성화된 메뉴가 없는 그룹은 기본으로 접어둬요 (메뉴가 많아서 한눈에 안 들어오니까)
+    if(!group.querySelector('.adminNav-item.active')) group.classList.add('collapsed');
+    label.onclick = () => group.classList.toggle('collapsed');
+  });
+
   adminNavItems.forEach(btn => {
     btn.onclick = () => {
       const target = btn.dataset.section;
@@ -2272,6 +2374,7 @@
       if(target === 'shareholders'){ populateShareholderBranchSelect(); }
       if(target === 'activity') renderActivityList();
       if(target === 'formTemplates'){ resetFormTemplateFields(); renderFormTemplateList(); }
+      if(target === 'guideManage'){ resetGuideFields(); renderGuideAdminList(); }
     };
   });
 
@@ -3393,6 +3496,173 @@
     btn.disabled = false;
     btn.textContent = '상신';
   };
+
+  /* ================================================
+     가이드 게시판 (관리자 작성 + 전 직원 열람)
+     ================================================ */
+  let currentGuideId = null;
+  let guideFileData = null; // { name, mime, data(base64) }
+
+  function resetGuideFields(){
+    currentGuideId = null;
+    document.getElementById('guideCategory').value = '정책가이드';
+    document.getElementById('guideTitle').value = '';
+    document.getElementById('guideContent').value = '';
+    document.getElementById('guideFileInput').value = '';
+    document.getElementById('guideFilePreview').textContent = '';
+    guideFileData = null;
+    document.getElementById('guideMsg').className = 'msg';
+  }
+  document.getElementById('guideNewBtn').onclick = resetGuideFields;
+
+  document.getElementById('guideFileInput').onchange = (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 3 * 1024 * 1024){
+      showAlert('3MB 이하의 파일만 첨부할 수 있어요.');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      guideFileData = { name: file.name, mime: file.type, data: reader.result };
+      document.getElementById('guideFilePreview').textContent = '첨부됨: ' + file.name;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  async function fetchGuides(){
+    const rows = [];
+    try{
+      const listResult = await window.storage.list('guide:');
+      const keys = listResult ? listResult.keys : [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        rows.push({ id: key.replace('guide:', ''), data: JSON.parse(rec.value) });
+      }
+    }catch(e){ /* ignore */ }
+    rows.sort((a, b) => (b.data.createdAt || '').localeCompare(a.data.createdAt || ''));
+    return rows;
+  }
+
+  document.getElementById('guideSaveBtn').onclick = async () => {
+    const category = document.getElementById('guideCategory').value;
+    const title = document.getElementById('guideTitle').value.trim();
+    const content = document.getElementById('guideContent').value.trim();
+    const msgEl = document.getElementById('guideMsg');
+    if(!title || !content){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '제목과 내용을 입력해 주세요.';
+      return;
+    }
+    try{
+      const id = currentGuideId || ('g' + Date.now());
+      let file = guideFileData;
+      let createdAt = new Date().toISOString();
+      if(currentGuideId){
+        const old = await window.storage.get('guide:' + currentGuideId).catch(() => null);
+        if(old){
+          const oldData = JSON.parse(old.value);
+          if(!file) file = oldData.file || null;
+          if(oldData.createdAt) createdAt = oldData.createdAt;
+        }
+      }
+      await window.storage.set('guide:' + id, JSON.stringify({
+        category, title, content, file, createdAt,
+        author: currentUserId || '-'
+      }));
+      logActivity(currentGuideId ? '수정' : '등록', title, '가이드(' + category + ')');
+      msgEl.className = 'msg success';
+      msgEl.textContent = '"' + title + '" 저장됐어요.';
+      resetGuideFields();
+      renderGuideAdminList();
+    }catch(e){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '저장 중 문제가 생겼어요. 다시 시도해 주세요.';
+    }
+  };
+
+  async function renderGuideAdminList(){
+    const listEl = document.getElementById('guideAdminList');
+    listEl.innerHTML = '<li class="employeeList-empty">불러오는 중...</li>';
+    const rows = await fetchGuides();
+    if(!rows.length){
+      listEl.innerHTML = '<li class="employeeList-empty">등록된 글이 없어요.</li>';
+      return;
+    }
+    listEl.innerHTML = rows.map(({id, data}) =>
+      '<li class="branchRow" data-id="' + id + '">' +
+      '<span class="branchRow-main" style="cursor:pointer;">' +
+      '<span class="employeeList-name">[' + data.category + '] ' + data.title + '</span>' +
+      '<span class="employeeList-meta">' + formatRequestedAt(data.createdAt) + (data.file ? ' · 첨부파일 있음' : '') + '</span>' +
+      '</span>' +
+      '<button class="branchRow-delete" data-id="' + id + '" data-name="' + data.title + '">삭제</button>' +
+      '</li>'
+    ).join('');
+    listEl.querySelectorAll('.branchRow-main').forEach(main => {
+      main.onclick = async () => {
+        const row = main.closest('.branchRow');
+        const rec = await window.storage.get('guide:' + row.dataset.id);
+        const data = JSON.parse(rec.value);
+        currentGuideId = row.dataset.id;
+        document.getElementById('guideCategory').value = data.category;
+        document.getElementById('guideTitle').value = data.title;
+        document.getElementById('guideContent').value = data.content;
+        guideFileData = data.file || null;
+        document.getElementById('guideFilePreview').textContent = data.file ? '첨부됨: ' + data.file.name + ' (변경하려면 새 파일 선택)' : '';
+        document.getElementById('guideMsg').className = 'msg';
+        window.scrollTo({top:0, behavior:'smooth'});
+      };
+    });
+    listEl.querySelectorAll('.branchRow-delete').forEach(btn => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        const ok = await showConfirm('"' + btn.dataset.name + '" 글을 삭제할까요?');
+        if(!ok) return;
+        await window.storage.delete('guide:' + btn.dataset.id).catch(() => null);
+        logActivity('삭제', btn.dataset.name, '가이드');
+        renderGuideAdminList();
+      };
+    });
+  }
+
+  /* ---- 직원용: 가이드 열람 ---- */
+  async function renderGuideNav(){
+    const navEl = document.getElementById('guideNav');
+    const rows = await fetchGuides();
+    if(!rows.length){
+      navEl.innerHTML = '<div class="employeeList-empty" style="color:var(--paper-dim); padding:12px;">등록된 글이 없어요.</div>';
+      return;
+    }
+    const byCategory = {};
+    rows.forEach(r => { (byCategory[r.data.category] = byCategory[r.data.category] || []).push(r); });
+    navEl.innerHTML = Object.keys(byCategory).map(cat =>
+      '<div class="adminNav-group">' +
+      '<div class="adminNav-groupLabel">' + cat + '</div>' +
+      byCategory[cat].map(r => '<button class="adminNav-item" data-id="' + r.id + '">' + r.data.title + '</button>').join('') +
+      '</div>'
+    ).join('');
+    navEl.querySelectorAll('.adminNav-item').forEach(btn => {
+      btn.onclick = () => {
+        navEl.querySelectorAll('.adminNav-item').forEach(b => b.classList.toggle('active', b === btn));
+        renderGuideRead(btn.dataset.id);
+      };
+    });
+  }
+
+  async function renderGuideRead(guideId){
+    const rec = await window.storage.get('guide:' + guideId).catch(() => null);
+    if(!rec) return;
+    const data = JSON.parse(rec.value);
+    const areaEl = document.getElementById('guideReadArea');
+    areaEl.innerHTML =
+      '<div class="employeeList-role" style="margin-bottom:10px;">' + data.category + '</div>' +
+      '<h2 class="dashGreeting" style="margin-bottom:6px;">' + data.title + '</h2>' +
+      '<p class="sub" style="margin-bottom:20px;">' + formatRequestedAt(data.createdAt) + '</p>' +
+      '<div class="adminCard" style="white-space:pre-line; line-height:1.7;">' + data.content + '</div>' +
+      (data.file ? '<div style="margin-top:16px;"><a href="' + data.file.data + '" download="' + data.file.name + '" class="btn secondary" style="display:inline-block; text-decoration:none; width:auto; padding:10px 20px;">📎 ' + data.file.name + ' 다운로드</a></div>' : '');
+  }
 
   document.getElementById('branchExcelBtn').onclick = async () => {
     const branches = await fetchBranches();
