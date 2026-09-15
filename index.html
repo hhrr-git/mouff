@@ -1,0 +1,3113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>mouff · Intranet FINAL</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;700&family=Pretendard:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#4A1620;
+    --ink-2:#5E1F2B;
+    --paper:#F3F2EE;
+    --paper-dim:#D9BFC4;
+    --line:#7A3641;
+    --gold:#D8B04A;
+    --gold-dim:#A8843A;
+    --danger:#C1543C;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Pretendard', -apple-system, sans-serif;
+    background:var(--ink);
+    color:var(--paper);
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ---- Left: identity panel ---- */
+  .left{
+    flex:1.1;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:56px 64px;
+    background:
+      radial-gradient(circle at 18% 24%, rgba(201,162,75,0.10), transparent 40%),
+      var(--ink);
+    overflow:hidden;
+  }
+  .brand-mark{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.02em;
+    color:var(--paper-dim);
+  }
+  .hero{
+    max-width:420px;
+  }
+  .hero h1{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:44px;
+    line-height:1.28;
+    margin:0 0 18px;
+    color:var(--paper);
+  }
+  .hero p{
+    font-size:15px;
+    line-height:1.7;
+    color:var(--paper-dim);
+    margin:0;
+    max-width:360px;
+  }
+  .foot-note{
+    font-size:12px;
+    color:#6B7280;
+  }
+
+  /* network motif */
+  svg.motif{
+    position:absolute;
+    right:-60px;
+    bottom:-40px;
+    width:520px;
+    height:520px;
+    opacity:0.9;
+  }
+  svg.motif circle{ fill:var(--ink-2); stroke:var(--line); stroke-width:1; }
+  svg.motif circle.node-active{ fill:var(--gold-dim); stroke:var(--gold); }
+  svg.motif line{ stroke:var(--line); stroke-width:1; }
+
+  /* ---- Right: form panel ---- */
+  .right{
+    flex:0.9;
+    background:var(--paper);
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px;
+  }
+  .panel{
+    width:100%;
+    max-width:340px;
+  }
+  .panel h2{
+    font-size:20px;
+    font-weight:600;
+    margin:0 0 6px;
+  }
+  .panel .sub{
+    font-size:13px;
+    color:#6B6357;
+    margin:0 0 32px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:#4B4638;
+    margin:0 0 6px;
+  }
+  .field{ margin-bottom:16px; }
+  input[type=text], input[type=password], input[type=date], textarea{
+    width:100%;
+    padding:11px 12px;
+    font-size:14px;
+    font-family:inherit;
+    border:1px solid #D8D5CC;
+    border-radius:3px;
+    background:#FCFBF9;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s;
+    resize:vertical;
+  }
+  input:focus, textarea:focus{
+    border-color:var(--gold-dim);
+  }
+  .btn{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    font-size:14px;
+    font-weight:600;
+    font-family:inherit;
+    border:none;
+    border-radius:3px;
+    background:var(--ink);
+    color:var(--paper);
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .btn:hover{ background:#0E1218; }
+  .btn:disabled{ opacity:0.5; cursor:default; }
+  .btn.secondary{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid #D8D5CC;
+    margin-top:10px;
+  }
+  .btn.secondary:hover{ background:#EAE8E1; }
+
+  .switch{
+    margin-top:22px;
+    font-size:13px;
+    color:#6B6357;
+    text-align:center;
+  }
+  .switch button{
+    background:none;
+    border:none;
+    color:var(--gold-dim);
+    font-weight:600;
+    cursor:pointer;
+    font-size:13px;
+    font-family:inherit;
+    padding:0;
+  }
+  .msg{
+    font-size:13px;
+    padding:10px 12px;
+    border-radius:3px;
+    margin-bottom:16px;
+    display:none;
+  }
+  .msg.error{ display:block; background:#F7E4DE; color:var(--danger); }
+  .msg.success{ display:block; background:#E5EFE6; color:#3A6B41; }
+
+  .hint{
+    font-size:12px;
+    color:#8C8676;
+    margin-top:24px;
+    line-height:1.6;
+    border-top:1px solid #E1DED4;
+    padding-top:16px;
+  }
+
+
+  .orgNameCell{display:flex;align-items:center;gap:8px}.orgDepth{display:inline-block;width:18px;border-top:1px solid #CFC9BD}.orgBadge{font-size:10px;padding:2px 6px;border:1px solid #DDD7CC;border-radius:999px;color:#746C60;background:#FAF9F6}
+  .hrStdTabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}.hrStdTab{border:1px solid var(--paper-dim);background:#fff;padding:8px 12px;border-radius:7px;cursor:pointer;font:inherit;font-size:12px}.hrStdTab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stdPanel{border-top:1px solid #E7E3DA;margin-top:18px;padding-top:18px}.stdPanel h3{font-size:15px;margin:0 0 6px}.stdHint{font-size:11px;color:#8C8676;margin-bottom:14px}.stdGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.stdGrid .full{grid-column:1/-1}.stdGrid input,.stdGrid select{width:100%}.payItemToolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}.payItemForm{background:#F8F7F3;border:1px solid #E7E3DA;padding:14px;border-radius:6px;margin-bottom:14px}@media(max-width:900px){.stdGrid{grid-template-columns:1fr}}
+  @media (max-width:820px){
+    .authLayout{ flex-direction:column; }
+    .left{ padding:36px 28px; min-height:220px; }
+    .hero h1{ font-size:30px; }
+    svg.motif{ display:none; }
+    .right{ padding:32px 24px; }
+  }
+
+  /* ---- Dashboard ---- */
+  .authLayout{ display:flex; width:100%; }
+
+  #dashboardView{
+    min-height:100vh;
+    width:100%;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .dashNav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 40px;
+    height:56px;
+    background:var(--ink);
+    color:var(--paper);
+  }
+  .dashNav-left{
+    display:flex;
+    align-items:center;
+    gap:36px;
+  }
+  .dashNav-brand{
+    font-family:'Noto Serif KR', serif;
+    font-weight:700;
+    font-size:16px;
+  }
+  .dashNav-menu{
+    display:flex;
+    gap:24px;
+  }
+  .dashNav-menu a{
+    color:var(--paper-dim);
+    text-decoration:none;
+    font-size:13px;
+  }
+  .dashNav-menu a:hover{ color:var(--paper); }
+  .dashNav-right{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .dashSearch{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    color:var(--paper);
+    font-family:inherit;
+    font-size:12px;
+    padding:6px 10px;
+    width:150px;
+  }
+  .dashSearch::placeholder{ color:var(--paper-dim); }
+  #logoutBtn{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--paper-dim);
+    padding:6px 12px;
+    border-radius:3px;
+    font-size:12px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  #logoutBtn:hover{ background:var(--ink-2); }
+
+  .dashMain{
+    max-width:1040px;
+    margin:0 auto;
+    padding:32px 32px 80px;
+  }
+  .dashGreeting{
+    font-size:20px;
+    font-weight:600;
+    margin:0 0 32px;
+  }
+
+  .dashGrid{
+    display:grid;
+    grid-template-columns:1.3fr 1.3fr 1fr;
+    gap:20px;
+  }
+  .dashGrid .span2{ grid-column:span 2; }
+
+  .dCard{
+    background:#FCFBF9;
+    border:1px solid #E5E1D8;
+    border-radius:3px;
+    padding:20px;
+  }
+  .dCard-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:12px;
+    padding-bottom:10px;
+    border-bottom:2px solid var(--ink);
+  }
+  .dCard-head h3{ font-size:14px; font-weight:600; margin:0; }
+  .dCard-more{ font-size:11px; color:var(--gold-dim); text-decoration:none; }
+  .dCard-placeholder{ font-size:12px; color:#A39C8C; margin:0; }
+
+  .noticeList{ list-style:none; margin:0; padding:0; }
+  .noticeList li{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    padding:9px 0;
+    border-bottom:1px solid #EDEAE2;
+    font-size:13px;
+  }
+  .noticeList li:last-child{ border-bottom:none; }
+  .noticeList-title{ color:var(--ink); flex:1; }
+  .noticeList-date{ color:#A39C8C; font-size:11px; }
+  .tag-new{
+    font-size:9px;
+    font-weight:700;
+    color:#fff;
+    background:var(--gold-dim);
+    padding:2px 5px;
+    border-radius:2px;
+    letter-spacing:0.03em;
+  }
+
+  .approvalTable{ width:100%; border-collapse:collapse; font-size:12px; }
+  .approvalTable th{
+    text-align:left;
+    font-weight:600;
+    color:#8C8676;
+    font-size:11px;
+    padding:0 0 8px;
+    border-bottom:1px solid #E5E1D8;
+  }
+  .approvalTable td{
+    padding:9px 0;
+    border-bottom:1px solid #EDEAE2;
+    color:var(--ink);
+  }
+  .status-pending{ color:var(--gold-dim); }
+  .status-approved{ color:#3A6B41; }
+  .status-rejected{ color:var(--danger); }
+
+  .dSide{ display:flex; flex-direction:column; gap:20px; }
+
+  .profileCard{ text-align:center; }
+  .profileCard-avatar{
+    width:56px; height:56px;
+    border-radius:50%;
+    background:var(--paper-dim);
+    margin:0 auto 12px;
+  }
+  .profileCard-name{ font-size:15px; font-weight:600; }
+  .profileCard-role{
+    display:inline-block;
+    font-size:10px;
+    color:var(--gold-dim);
+    background:#F3E8D2;
+    padding:2px 8px;
+    border-radius:10px;
+    margin-top:4px;
+  }
+  .profileCard-role:empty{ display:none; }
+  .profileCard-line{ font-size:11px; color:#8C8676; margin-top:6px; }
+
+  .quickList{ list-style:none; margin:0; padding:0; }
+  .quickList li{ padding:7px 0; border-bottom:1px solid #EDEAE2; font-size:13px; }
+  .quickList li:last-child{ border-bottom:none; }
+  .quickList a{ color:var(--ink); text-decoration:none; }
+  .quickList a:hover{ color:var(--gold-dim); }
+
+  @media (max-width:900px){
+    .dashGrid{ grid-template-columns:1fr; }
+    .dashGrid .span2{ grid-column:span 1; }
+    .dashNav-menu{ display:none; }
+    .dashSearch{ display:none; }
+    .dashMain{ padding:24px 18px 60px; }
+    .dashNav{ padding:0 20px; }
+  }
+
+  /* ---- OTP Modal ---- */
+  .modalOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(22,10,13,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:20px;
+  }
+  .modalBox{
+    background:var(--paper);
+    color:var(--ink);
+    width:100%;
+    max-width:340px;
+    padding:32px 28px;
+    border-radius:6px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+  .modalBox h2{ font-size:19px; font-weight:600; margin:0 0 6px; }
+  .modalBox .sub{ font-size:13px; color:#6B6357; margin:0 0 18px; }
+  .otpDemoHint{
+    font-size:12px;
+    color:var(--gold-dim);
+    background:#F3E8D2;
+    border:1px dashed var(--gold-dim);
+    padding:8px 10px;
+    border-radius:3px;
+    margin-bottom:18px;
+  }
+  #otpInput, #otpAppInput, #otpSmsInput{
+    letter-spacing:6px;
+    font-size:18px;
+    text-align:center;
+  }
+
+  .otpTabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:18px;
+    border-bottom:1px solid #E1DED4;
+  }
+  .otpTab{
+    flex:1;
+    background:none;
+    border:none;
+    padding:10px 4px;
+    font-size:13px;
+    font-weight:600;
+    font-family:inherit;
+    color:#A39C8C;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  .otpTab.active{
+    color:var(--ink);
+    border-bottom-color:var(--gold-dim);
+  }
+  #otpSecretBox{
+    word-break:break-all;
+    font-family:monospace;
+    font-size:13px;
+  }
+
+  /* ---- Admin Center ---- */
+  .adminCenter{
+    display:flex;
+    align-items:flex-start;
+    gap:0;
+    margin:-32px;
+    min-height:calc(100vh - 56px);
+  }
+  .adminSidebar{
+    width:200px;
+    flex-shrink:0;
+    background:var(--ink);
+    padding:28px 16px;
+    min-height:calc(100vh - 56px);
+  }
+  .adminSidebar #adminBackBtn{
+    width:100%;
+    color:var(--paper-dim);
+    border-color:var(--line);
+    background:none;
+    margin-bottom:24px;
+  }
+  .adminSidebar #adminBackBtn:hover{ background:var(--ink-2); }
+  .adminNav{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  .adminNav-group{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .adminNav-groupLabel{
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    color:#8A7A7E;
+    padding:0 12px 4px;
+  }
+  .adminNav-item{
+    text-align:left;
+    background:none;
+    border:none;
+    color:var(--paper-dim);
+    font-family:inherit;
+    font-size:13px;
+    padding:9px 12px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .adminNav-item:hover{ background:var(--ink-2); color:var(--paper); }
+  .adminNav-item.active{
+    background:var(--gold-dim);
+    color:#fff;
+    font-weight:600;
+  }
+  .adminContent{
+    flex:1;
+    padding:32px 40px;
+  }
+  .adminGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  .adminCard{
+    background:#FCFBF9;
+    border:1px solid #E1DED4;
+    border-radius:4px;
+    padding:24px;
+  }
+  .adminCard h3{
+    font-size:15px;
+    font-weight:600;
+    margin:0 0 18px;
+  }
+  .adminCard-placeholder{
+    text-align:center;
+    color:#A39C8C;
+    font-size:13px;
+    padding:60px 20px;
+  }
+  .employeeList{
+    list-style:none;
+    margin:0;
+    padding:0;
+  }
+  .employeeList li{
+    padding:12px 0;
+    border-bottom:1px solid #E1DED4;
+    font-size:13px;
+  }
+  .employeeList-empty{ color:#A39C8C; }
+  .employeeList-name{ font-weight:600; color:var(--ink); }
+  .employeeList-meta{ color:#8C8676; display:block; margin-top:2px; font-size:12px; }
+  .employeeList-role{
+    display:inline-block;
+    font-size:11px;
+    padding:2px 7px;
+    border-radius:10px;
+    margin-left:6px;
+    background:#F3E8D2;
+    color:var(--gold-dim);
+  }
+  select{
+    width:100%;
+    padding:11px 12px;
+    font-size:14px;
+    font-family:inherit;
+    border:1px solid #D8D5CC;
+    border-radius:3px;
+    background:#FCFBF9;
+    color:var(--ink);
+  }
+  .checkboxField label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:400;
+    font-size:13px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .checkboxField input[type=checkbox]{
+    width:auto;
+    margin:0;
+  }
+  .branchRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 0;
+  }
+  .branchRow-main{ flex:1; min-width:0; }
+  .branchRow-delete, .approvalRow-btn{
+    background:none;
+    border:1px solid #D8D5CC;
+    color:var(--danger);
+    font-family:inherit;
+    font-size:11px;
+    padding:6px 10px;
+    border-radius:3px;
+    cursor:pointer;
+    white-space:nowrap;
+    flex-shrink:0;
+    line-height:1.2;
+  }
+  .branchRow-delete:hover{ background:#F7E4DE; }
+  .approvalRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 0;
+  }
+  .approvalRow-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .approvalRow-approve{ color:#3A6B41; }
+  .approvalRow-approve:hover{ background:#E5EFE6; }
+  .approvalRow-reject:hover{ background:#F7E4DE; }
+
+  .btnRow{
+    display:flex;
+    gap:10px;
+    margin-top:8px;
+  }
+  .btnRow .btn{ margin-top:0; flex:1; }
+
+  .approvalSummary{
+    background:#F3E8D2;
+    border-radius:3px;
+    padding:14px 16px;
+    margin-bottom:18px;
+    font-size:13px;
+  }
+  .approvalSummary div{
+    display:flex;
+    justify-content:space-between;
+    padding:4px 0;
+  }
+  .approvalSummary-label{ color:var(--gold-dim); font-weight:600; }
+
+  .approvalDoc{
+    background:#FCFBF9;
+    border:1px solid #E1DED4;
+    border-radius:3px;
+    padding:4px 16px;
+  }
+  .approvalDoc div{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:8px 0;
+    border-bottom:1px solid #EDEAE2;
+    font-size:13px;
+  }
+  .approvalDoc div:last-child{ border-bottom:none; }
+  .approvalDoc-label{ color:#8C8676; flex-shrink:0; }
+  .approvalRow-clickable{ cursor:pointer; }
+  .approvalRow-clickable:hover{ background:#F7F5F1; }
+  .approvalRow-btn{
+    font-size:11px;
+    color:var(--gold-dim);
+    border:1px solid #D8D5CC;
+    padding:6px 10px;
+    border-radius:3px;
+    flex-shrink:0;
+  }
+  .deptRow{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 0;
+    cursor:pointer;
+  }
+  .deptRow-main{ flex:1; min-width:0; }
+  .deptRow-delete{
+    background:none;
+    border:1px solid #D8D5CC;
+    color:var(--danger);
+    font-family:inherit;
+    font-size:11px;
+    padding:5px 9px;
+    border-radius:3px;
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .deptRow-delete:hover{ background:#F7E4DE; }
+
+  /* ---- 직원등록/목록 표 ---- */
+  .empRegHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .empRegHead-actions{ display:flex; gap:14px; }
+  .linkBtn{
+    background:none;
+    border:none;
+    color:var(--gold-dim);
+    font-size:12px;
+    font-family:inherit;
+    cursor:pointer;
+    padding:0;
+  }
+  .linkBtn:hover{ text-decoration:underline; }
+  .empTableWrap{
+    overflow-x:auto;
+    margin-bottom:12px;
+    border:1px solid #E1DED4;
+    border-radius:3px;
+  }
+  .empRegTable{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+    white-space:nowrap;
+  }
+  .empRegTable th{
+    background:#F3F2EE;
+    text-align:left;
+    font-weight:600;
+    color:#6B6357;
+    padding:8px 10px;
+    border-bottom:1px solid #E1DED4;
+    position:sticky;
+    top:0;
+  }
+  .empRegTable td{
+    padding:6px 8px;
+    border-bottom:1px solid #EDEAE2;
+  }
+  .empRegTable input, .empRegTable select{
+    width:auto;
+    min-width:90px;
+    padding:6px 8px;
+    font-size:12px;
+    border:1px solid #E1DED4;
+  }
+  .empRegTable input[type=date]{ min-width:130px; }
+  .empRegTable input[type=checkbox]{ min-width:auto; width:auto; }
+  .empFilterRow{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:14px;
+    font-size:12px;
+    color:#6B6357;
+  }
+  .empFilterRow input[type=date]{ width:auto; display:inline-block; padding:6px 8px; font-size:12px; }
+  .empFilterRow input[type=text]{ width:160px; display:inline-block; padding:6px 8px; font-size:12px; }
+  .tinyBtn{
+    background:none;
+    border:1px solid #D8D5CC;
+    color:var(--gold-dim);
+    font-family:inherit;
+    font-size:10px;
+    padding:2px 7px;
+    border-radius:3px;
+    cursor:pointer;
+    margin-left:4px;
+  }
+  .tinyBtn:hover{ background:#F3E8D2; }
+
+  /* ---- Desktop 관리자센터 레이아웃 보정 ---- */
+  @media (min-width:821px){
+    /* dashMain의 1040px 폭에 갇히지 않고 관리자센터만 viewport 전체 폭을 사용 */
+    #adminView{
+      width:100vw;
+      margin-left:calc(50% - 50vw);
+      margin-top:-32px;
+      margin-bottom:-80px;
+    }
+    .adminCenter{
+      width:100%;
+      margin:0;
+      min-height:calc(100vh - 56px);
+      align-items:stretch;
+      background:var(--paper);
+    }
+    .adminSidebar{
+      width:200px;
+      padding:24px 16px 40px;
+      min-height:calc(100vh - 56px);
+      align-self:stretch;
+    }
+    .adminNav{gap:14px}
+    .adminNav-item{font-size:12px;padding:8px 10px}
+    .adminContent{
+      flex:1 1 auto;
+      width:calc(100% - 200px);
+      min-width:0;
+      padding:28px 36px 56px;
+      background:var(--paper);
+    }
+    .adminSection{width:100%;max-width:1320px;margin:0 auto}
+    .adminGrid{gap:18px}
+    .adminCard{padding:18px}
+    .adminCard h3{font-size:14px;margin-bottom:14px}
+    .adminContent .field{margin-bottom:12px}
+    .adminContent label{font-size:11px;margin-bottom:5px}
+    .adminContent input[type=text],.adminContent input[type=password],.adminContent input[type=date],.adminContent textarea,.adminContent select{padding:9px 10px;font-size:13px}
+    .shFormGrid{gap:0 14px}
+    .empRegTable{font-size:11px}
+    .empRegTable th{padding:7px 8px}
+    .empRegTable td{padding:5px 7px}
+    .empRegTable input,.empRegTable select{padding:5px 7px;font-size:11px;min-width:84px}
+    .profileHero{margin:12px 0 16px}
+    .profileHero h2{font-size:19px}
+    .profileTab{padding:7px 9px;font-size:11px}
+    .profileGrid{gap:10px 14px}
+    .miniForm{gap:8px 10px}
+  }
+
+  @media (max-width:820px){
+    .adminCenter{ flex-direction:column; margin:-24px -20px; }
+    .adminSidebar{ width:100%; min-height:auto; }
+    .adminNav{ flex-direction:row; flex-wrap:wrap; }
+    .adminContent{ padding:24px 20px; }
+    .adminGrid{ grid-template-columns:1fr; }
+  }
+
+  /* ---- 주주명부 확장 ---- */
+  .shTopRow{display:flex;gap:12px;align-items:end;margin-bottom:20px;}
+  .shTopRow .field{flex:1;margin-bottom:0;}
+  .shTabs{display:flex;gap:4px;border-bottom:1px solid #E1DED4;margin:20px 0;}
+  .shTab{background:none;border:none;padding:10px 14px;font:inherit;font-size:13px;color:#8C8676;cursor:pointer;border-bottom:2px solid transparent;}
+  .shTab.active{color:var(--ink);font-weight:600;border-bottom-color:var(--gold-dim);}
+  .shFormGrid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  .shFormGrid .full{grid-column:1/-1;}
+  .shSummary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 18px;}
+  .shStat{background:#F7F5F1;border:1px solid #E5E1D8;border-radius:3px;padding:12px;}
+  .shStat-label{font-size:10px;color:#8C8676;margin-bottom:5px;}
+  .shStat-value{font-size:15px;font-weight:600;}
+  .sensitiveHint{font-size:11px;color:#8C8676;margin-top:-8px;margin-bottom:14px;}
+  @media(max-width:820px){.shFormGrid{grid-template-columns:1fr}.shSummary{grid-template-columns:1fr 1fr}.shTopRow{flex-direction:column;align-items:stretch;}}
+
+  /* ---- 기획 확장 v2 ---- */
+  .sealPreview{margin-top:8px;min-height:110px;border:1px dashed var(--paper-dim);display:flex;align-items:center;justify-content:center;background:#fff;color:#9b8d8f;border-radius:8px;overflow:hidden}.sealPreview img{max-height:100px;max-width:180px;object-fit:contain}.sealThumb{width:54px;height:54px;object-fit:contain;background:#fff;border:1px solid var(--paper-dim);border-radius:6px}.empStats{display:flex;justify-content:flex-end;gap:18px;flex-wrap:wrap;font-size:12px;margin:10px 0 14px}.empStats b{font-size:15px}.profileHero{display:flex;justify-content:space-between;align-items:center;margin:18px 0}.profileHero h2{font-family:inherit;margin:0 0 5px;font-size:22px;font-weight:700}.profileHero,.profileTabs,#profileContent,#profileContent *{font-family:inherit}.profileGrid b{font-size:12px;color:#6B6357;font-weight:600}.profileGrid p{font-size:13px;margin:6px 0 0;color:var(--ink)}.statusPill{padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:12px}.profileTabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.profileTab{border:1px solid var(--paper-dim);background:#fff;padding:8px 11px;border-radius:7px;cursor:pointer;font-size:12px}.profileTab.active{background:var(--ink);color:#fff;border-color:var(--ink)}.profileGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.profileGrid .full{grid-column:1/-1}.profileList{width:100%;border-collapse:collapse;margin-top:12px}.profileList th,.profileList td{border-bottom:1px solid var(--paper-dim);padding:9px;text-align:left;font-size:12px}.miniForm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}.miniForm input,.miniForm select,.miniForm textarea{width:100%}@media(max-width:900px){.profileGrid,.miniForm{grid-template-columns:1fr}}
+.checkLine{display:flex;flex-wrap:wrap;gap:10px 18px;padding:10px 0}.checkLine label{font-size:13px}.field.full{grid-column:1/-1}
+</style>
+</head>
+<body>
+
+<div class="authLayout" id="authLayout">
+  <div class="left">
+    <div class="brand-mark">mouff</div>
+    <div class="hero">
+      <h1>모두가 연결된<br>하나의 사무실</h1>
+      <p>공지, 결재, 조직도, 자료까지 — 흩어져 있던 회사 업무를 한 곳에서 확인하세요.</p>
+    </div>
+    <div class="foot-note">mouff · 내부 프로토타입</div>
+
+    <svg class="motif" viewBox="0 0 400 400">
+      <line x1="200" y1="200" x2="80" y2="110"/>
+      <line x1="200" y1="200" x2="320" y2="90"/>
+      <line x1="200" y1="200" x2="330" y2="230"/>
+      <line x1="200" y1="200" x2="150" y2="320"/>
+      <line x1="200" y1="200" x2="60" y2="280"/>
+      <line x1="80" y1="110" x2="150" y2="320" opacity="0.5"/>
+      <line x1="320" y1="90" x2="330" y2="230" opacity="0.5"/>
+      <circle class="node-active" cx="200" cy="200" r="14"/>
+      <circle cx="80" cy="110" r="8"/>
+      <circle cx="320" cy="90" r="8"/>
+      <circle cx="330" cy="230" r="8"/>
+      <circle cx="150" cy="320" r="8"/>
+      <circle cx="60" cy="280" r="8"/>
+    </svg>
+  </div>
+
+  <div class="right">
+    <div class="panel">
+
+      <div id="msgBox" class="msg"></div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginView">
+        <h2>로그인</h2>
+        <p class="sub">아이디와 비밀번호를 입력해 주세요</p>
+
+        <div class="field">
+          <label for="loginId">아이디</label>
+          <input type="text" id="loginId" placeholder="아이디 입력" autocomplete="username">
+        </div>
+        <div class="field">
+          <label for="loginPw">비밀번호</label>
+          <input type="password" id="loginPw" placeholder="비밀번호 입력" autocomplete="current-password">
+        </div>
+        <button class="btn" id="loginBtn">로그인</button>
+
+        <div class="switch">
+          <button id="toFindId">아이디 찾기</button> &nbsp;|&nbsp; <button id="toFindPw">비밀번호 찾기</button>
+        </div>
+
+        <div class="hint">
+          계정은 관리자가 생성해요. 아이디가 없다면 관리자에게 문의해 주세요.<br>
+          <b>테스트용 데모 계정</b> — 아이디: <code>demo</code> / 비밀번호: <code>1234</code>
+          <div id="storageWarning" style="display:none; margin-top:10px; color:var(--danger);">
+            ⚠ 지금 이 화면은 저장 기능이 없는 환경에서 열려 있어요. 새로고침하면 만든 계정이 사라져요.
+          </div>
+        </div>
+      </div>
+
+      <!-- FIND ID -->
+      <div id="findIdView" style="display:none;">
+        <h2>아이디 찾기</h2>
+        <p class="sub">등록된 이름과 이메일을 입력해 주세요</p>
+
+        <div class="field">
+          <label for="fiName">이름</label>
+          <input type="text" id="fiName" placeholder="이름">
+        </div>
+        <div class="field">
+          <label for="fiEmail">이메일</label>
+          <input type="text" id="fiEmail" placeholder="등록된 이메일">
+        </div>
+        <button class="btn" id="findIdBtn">아이디 찾기</button>
+        <button class="btn secondary" id="fiToLogin">뒤로가기</button>
+      </div>
+
+      <!-- FIND PW -->
+      <div id="findPwView" style="display:none;">
+        <h2>비밀번호 찾기</h2>
+        <p class="sub">아이디와 등록된 이메일을 입력해 주세요</p>
+
+        <div class="field">
+          <label for="fpId">아이디</label>
+          <input type="text" id="fpId" placeholder="아이디">
+        </div>
+        <div class="field">
+          <label for="fpEmail">이메일</label>
+          <input type="text" id="fpEmail" placeholder="가입 시 등록한 이메일">
+        </div>
+        <button class="btn" id="findPwVerifyBtn">본인 확인</button>
+        <button class="btn secondary" id="fpToLogin">뒤로가기</button>
+
+        <div id="fpResetFields" style="display:none; margin-top:20px;">
+          <div class="field">
+            <label for="fpNewPw">새 비밀번호</label>
+            <input type="password" id="fpNewPw" placeholder="새 비밀번호">
+          </div>
+          <div class="field">
+            <label for="fpNewPw2">새 비밀번호 확인</label>
+            <input type="password" id="fpNewPw2" placeholder="새 비밀번호 확인">
+          </div>
+          <button class="btn" id="resetPwBtn">비밀번호 변경</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+  <!-- OTP MODAL -->
+  <div id="otpModal" class="modalOverlay" style="display:none;">
+    <div class="modalBox">
+      <h2>보안 인증</h2>
+      <p class="sub">로그인 보호를 위해 인증코드를 입력해 주세요</p>
+
+      <div class="otpTabs">
+        <button class="otpTab active" id="otpTabApp">인증 앱</button>
+        <button class="otpTab" id="otpTabSms">문자 인증</button>
+      </div>
+
+      <!-- App-based TOTP -->
+      <div id="otpAppPanel">
+        <div class="field">
+          <label for="otpAppInput">인증 앱에 뜬 6자리 코드</label>
+          <input type="text" id="otpAppInput" maxlength="6" placeholder="000000">
+        </div>
+        <div id="otpMsgApp" class="msg"></div>
+        <button class="btn" id="otpAppConfirmBtn">인증하고 로그인</button>
+        <div class="switch">
+          <button id="otpShowSecret">아직 앱에 등록 안 하셨나요?</button>
+        </div>
+        <div id="otpSecretBox" class="otpDemoHint" style="display:none;"></div>
+      </div>
+
+      <!-- SMS fallback -->
+      <div id="otpSmsPanel" style="display:none;">
+        <div id="otpSmsHint" class="otpDemoHint"></div>
+        <div class="field">
+          <label for="otpSmsInput">문자로 받은 6자리 코드</label>
+          <input type="text" id="otpSmsInput" maxlength="6" placeholder="000000">
+        </div>
+        <div id="otpMsgSms" class="msg"></div>
+        <button class="btn" id="otpSmsConfirmBtn">인증하고 로그인</button>
+        <div class="switch">
+          코드를 못 받으셨나요? <button id="otpResend">재전송</button>
+        </div>
+      </div>
+
+      <button class="btn secondary" id="otpCancel">취소</button>
+    </div>
+  </div>
+
+  <!-- 범용 확인 모달 (브라우저 기본 confirm/alert가 막힌 환경 대응) -->
+  <div id="confirmModal" class="modalOverlay" style="display:none;">
+    <div class="modalBox">
+      <p id="confirmModalText" class="sub" style="margin:0 0 24px; white-space:pre-line; color:var(--ink); font-size:14px;"></p>
+      <button class="btn" id="confirmModalYes">확인</button>
+      <button class="btn secondary" id="confirmModalNo">취소</button>
+    </div>
+  </div>
+
+  <!-- 승인 요청 모달 (요약 + 사유 입력) -->
+  <div id="approvalRequestModal" class="modalOverlay" style="display:none;">
+    <div class="modalBox">
+      <h2>승인 요청</h2>
+      <div class="approvalSummary">
+        <div><span class="approvalSummary-label">요청</span><span id="arSummaryTarget"></span></div>
+        <div><span class="approvalSummary-label">요청일</span><span id="arSummaryDate"></span></div>
+        <div><span class="approvalSummary-label">요청자</span><span id="arSummaryUser"></span></div>
+      </div>
+      <div class="field">
+        <label for="arReason">요청 사유</label>
+        <textarea id="arReason" rows="3" placeholder="사유를 입력해 주세요"></textarea>
+      </div>
+      <div id="arMsg" class="msg"></div>
+      <button class="btn" id="arConfirmBtn">확인</button>
+      <button class="btn secondary" id="arCancelBtn">취소</button>
+    </div>
+  </div>
+
+  <!-- 승인 상세보기 모달 -->
+  <div id="approvalDetailModal" class="modalOverlay" style="display:none;">
+    <div class="modalBox" style="max-width:420px;">
+      <h2>요청 상세</h2>
+      <div id="adModalBody"></div>
+      <div class="btnRow" style="margin-top:24px;">
+        <button class="btn" id="adApproveBtn">승인</button>
+        <button class="btn secondary" id="adRejectBtn" style="color:var(--danger); border-color:var(--danger);">거부</button>
+      </div>
+      <button class="btn secondary" id="adCloseBtn">닫기</button>
+    </div>
+  </div>
+
+  <!-- 퇴사 처리 모달 -->
+  <div id="resignModal" class="modalOverlay" style="display:none;">
+    <div class="modalBox">
+      <h2>퇴사 처리</h2>
+      <p class="sub"><span id="resignModalName"></span>님의 퇴사일을 입력해 주세요.</p>
+      <div class="field">
+        <label for="resignDateInput">퇴사일</label>
+        <input type="date" id="resignDateInput">
+      </div>
+      <button class="btn" id="resignConfirmBtn">확인</button>
+      <button class="btn secondary" id="resignCancelBtn">취소</button>
+    </div>
+  </div>
+
+  <div id="dashboardView" style="display:none;">
+    <nav class="dashNav">
+      <div class="dashNav-left">
+        <div class="dashNav-brand">mouff</div>
+        <div class="dashNav-menu">
+          <a href="#">공지사항</a>
+          <a href="#" id="navApprovalLink">전자결재</a>
+          <a href="#">문서함</a>
+          <a href="#" id="navPermissionRequestLink">권한신청</a>
+          <a href="#">조직도</a>
+          <a href="#">MY</a>
+        </div>
+      </div>
+      <div class="dashNav-right">
+        <input type="text" class="dashSearch" placeholder="검색">
+        <button id="logoutBtn">로그아웃</button>
+      </div>
+    </nav>
+
+    <main class="dashMain">
+      <div id="dashHome">
+        <div class="dashGrid">
+
+          <!-- 공지사항 -->
+          <section class="dCard">
+            <div class="dCard-head">
+              <h3>공지사항</h3>
+              <a href="#" class="dCard-more">전체보기</a>
+            </div>
+            <ul class="noticeList">
+              <li><span class="tag-new">NEW</span><span class="noticeList-title">9월 정기 워크숍 안내</span><span class="noticeList-date">09.15</span></li>
+              <li><span class="tag-new">NEW</span><span class="noticeList-title">사내 시스템 점검 예정 (9/18 새벽)</span><span class="noticeList-date">09.14</span></li>
+              <li><span class="noticeList-title">신규 입사자 환영합니다</span><span class="noticeList-date">09.12</span></li>
+              <li><span class="noticeList-title">9월 급여명세서 발급 안내</span><span class="noticeList-date">09.05</span></li>
+              <li><span class="noticeList-title">사무실 좌석 재배치 공지</span><span class="noticeList-date">08.28</span></li>
+            </ul>
+          </section>
+
+          <!-- 전자결재 -->
+          <section class="dCard">
+            <div class="dCard-head">
+              <h3>전자결재</h3>
+              <a href="#" class="dCard-more">전체보기</a>
+            </div>
+            <table class="approvalTable">
+              <thead>
+                <tr><th>제목</th><th>기안일</th><th>상태</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>9월 마케팅 비용 상신</td><td>09.14</td><td><span class="status-pending">결재대기</span></td></tr>
+                <tr><td>연차 신청 - 이혜리</td><td>09.12</td><td><span class="status-approved">승인</span></td></tr>
+                <tr><td>노트북 구매 요청</td><td>09.10</td><td><span class="status-approved">승인</span></td></tr>
+                <tr><td>외주 계약서 검토 요청</td><td>09.08</td><td><span class="status-rejected">반려</span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <!-- 프로필 + 퀵메뉴 -->
+          <aside class="dSide">
+            <section class="dCard profileCard">
+              <div class="profileCard-avatar"></div>
+              <div class="profileCard-name" id="profileName">홍길동</div>
+              <div class="profileCard-role" id="profileRoleTag"></div>
+              <div class="profileCard-line"><span id="profileId">demo</span></div>
+              <div class="profileCard-line" id="profileEmail">demo@mouff.com</div>
+            </section>
+
+            <section class="dCard">
+              <div class="dCard-head"><h3>Quick</h3></div>
+              <ul class="quickList">
+                <li><a href="#">근태관리</a></li>
+                <li><a href="#">회의실 예약</a></li>
+                <li><a href="#">권한 신청</a></li>
+                <li id="adminQuickItem" style="display:none;"><a href="#" id="adminCardBtn">관리자 센터</a></li>
+              </ul>
+            </section>
+          </aside>
+
+          <!-- 캘린더 / 경조사 -->
+          <section class="dCard span2">
+            <div class="dCard-head"><h3>캘린더</h3></div>
+            <p class="dCard-placeholder">이번 주 일정이 없어요.</p>
+          </section>
+          <section class="dCard">
+            <div class="dCard-head"><h3>경조사</h3></div>
+            <p class="dCard-placeholder">등록된 소식이 없어요.</p>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ADMIN CENTER -->
+      <div id="permissionRequestView" style="display:none;">
+        <button class="linkBtn" id="permissionRequestBackBtn">← 대시보드</button><h2 class="dashGreeting" style="margin:18px 0 8px;">권한신청</h2><p class="sub" style="margin-bottom:18px;">공통 메뉴 외에 업무에 필요한 권한만 신청해요. 현재 소속/직무에 신청자격이 있는 권한만 표시됩니다.</p>
+        <div class="adminCard"><div class="shFormGrid"><div class="field"><label>권한 그룹</label><select id="userPermGroup"><option>급여담당자</option><option>근태담당자</option><option>직원정보 담당자</option></select></div><div class="field"><label>데이터 범위</label><select id="userPermScope"><option>소속팀</option><option>소속본부</option><option>특정 사업장</option></select></div><div class="field"><label>사용 시작일</label><input type="date" id="userPermFrom"></div><div class="field"><label>사용 종료일</label><input type="date" id="userPermTo"></div><div class="field full"><label>신청사유</label><input id="userPermReason" placeholder="업무상 필요한 사유를 입력해 주세요"></div></div><div class="sensitiveHint">급여 등 민감권한은 소속 조직/직무가 정책과 맞지 않으면 목록에 나타나지 않으며, 특별한 경우에는 별도 예외신청 절차를 사용합니다.</div><div class="btnRow"><button class="btn" id="userPermSubmitBtn">권한 신청</button></div></div>
+      </div>
+
+      <div id="adminView" style="display:none;">
+        <div class="adminCenter">
+          <aside class="adminSidebar">
+            <button class="btn secondary" id="adminBackBtn">← 대시보드로</button>
+            <nav class="adminNav">
+              <div class="adminNav-group">
+                <div class="adminNav-groupLabel">회사관리</div>
+                <button class="adminNav-item active" data-section="company">회사정보</button>
+                <button class="adminNav-item" data-section="seal">인감·직인</button>
+                <button class="adminNav-item" data-section="bank">계좌정보</button>
+                <button class="adminNav-item" data-section="shareholders">주주명부</button>
+              </div>
+              <div class="adminNav-group">
+                <div class="adminNav-groupLabel">인사</div>
+                <button class="adminNav-item" data-section="org">조직도</button>
+                <button class="adminNav-item" data-section="orgMaster">조직·인사 체계</button>
+                <button class="adminNav-item" data-section="employees">직원관리</button>
+                <button class="adminNav-item" data-section="hrstandards">인사기준 관리</button>
+                <button class="adminNav-item" data-section="attendance">근태관리</button>
+                <button class="adminNav-item" data-section="payroll">급여관리</button>
+              </div>
+              <div class="adminNav-group">
+                <div class="adminNav-groupLabel">재무/회계</div>
+                <button class="adminNav-item" data-section="tax">세금계산서 관리</button>
+                <button class="adminNav-item" data-section="sales">매출·매입 관리</button>
+                <button class="adminNav-item" data-section="budget">예산관리</button>
+              </div>
+              <div class="adminNav-group">
+                <div class="adminNav-groupLabel">보안/권한</div>
+                <button class="adminNav-item" data-section="permissionCatalog">권한 목록</button>
+                <button class="adminNav-item" data-section="permissionGroups">권한 그룹</button>
+                <button class="adminNav-item" data-section="permissionPolicy">권한 정책</button>
+                <button class="adminNav-item" data-section="grant">권한 부여</button>
+                <button class="adminNav-item" data-section="permissionRequests">권한신청 관리</button>
+                <button class="adminNav-item" data-section="levels">레벨 설정</button>
+                <button class="adminNav-item" data-section="accessLog">접근 이력</button>
+              </div>
+              <div class="adminNav-group">
+                <div class="adminNav-groupLabel">시스템</div>
+                <button class="adminNav-item" data-section="menu">메뉴 관리</button>
+                <button class="adminNav-item" data-section="settings">설정</button>
+                <button class="adminNav-item" data-section="activity">변경이력</button>
+              </div>
+            </nav>
+          </aside>
+
+          <div class="adminContent">
+
+            <!-- 회사정보 -->
+            <section class="adminSection" id="adminSection-company">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">회사정보</h2>
+              <p class="sub" style="margin-bottom:24px;">사업자등록증에 나오는 정보를 입력해 두세요. 지점·분점이 있으면 아래에서 추가로 등록할 수 있어요.</p>
+
+              <div class="adminCard">
+                <div id="companyMsg" class="msg"></div>
+
+                <div class="field">
+                  <label for="coBranchName">사업장 구분명</label>
+                  <input type="text" id="coBranchName" placeholder="예: 본점, 강남지점">
+                </div>
+                <div class="field">
+                  <label for="coBizName">상호(사업자명)</label>
+                  <input type="text" id="coBizName" placeholder="㈜mouff">
+                </div>
+                <div class="field">
+                  <label for="coBizNumber">사업자등록번호</label>
+                  <input type="text" id="coBizNumber" placeholder="000-00-00000">
+                </div>
+                <div class="field">
+                  <label for="coCeoName">대표자명</label>
+                  <input type="text" id="coCeoName" placeholder="대표자 이름">
+                </div>
+                <div class="field">
+                  <label for="coBizKind">사업자 구분</label>
+                  <select id="coBizKind">
+                    <option value="법인">법인</option>
+                    <option value="개인">개인</option>
+                  </select>
+                </div>
+                <div class="field" id="coCorpNumberField">
+                  <label for="coCorpNumber">법인등록번호</label>
+                  <input type="text" id="coCorpNumber" placeholder="000000-0000000">
+                </div>
+                <div class="field">
+                  <label for="coOpenDate">개업연월일</label>
+                  <input type="date" id="coOpenDate">
+                </div>
+                <div class="field">
+                  <label for="coAddress">사업장 소재지</label>
+                  <input type="text" id="coAddress" placeholder="도로명 주소">
+                </div>
+                <div class="field">
+                  <label for="coBizType">업태</label>
+                  <input type="text" id="coBizType" placeholder="예: 서비스업">
+                </div>
+                <div class="field">
+                  <label for="coBizItem">종목</label>
+                  <input type="text" id="coBizItem" placeholder="예: 소프트웨어 개발">
+                </div>
+                <div class="field">
+                  <label for="coStatus">사업장 상태</label>
+                  <select id="coStatus"><option value="영업중">영업중</option><option value="휴업">휴업</option><option value="폐업">폐업</option></select>
+                </div>
+                <div class="field" id="coPauseStartField" style="display:none;"><label for="coPauseStart">휴업 시작일</label><input type="date" id="coPauseStart"></div>
+                <div class="field" id="coPauseEndField" style="display:none;"><label for="coPauseEnd">휴업 종료 예정일</label><input type="date" id="coPauseEnd"></div>
+                <div class="field" id="coCloseDateField" style="display:none;"><label for="coCloseDate">폐업일</label><input type="date" id="coCloseDate"></div>
+                <div class="field checkboxField">
+                  <label><input type="checkbox" id="coIsHQ"> 대표 사업장으로 설정</label>
+                </div>
+
+                <div class="btnRow">
+                  <button class="btn" id="coSaveBtn">저장</button>
+                  <button class="btn secondary" id="coNewBtn">+ 새 사업장 추가</button>
+                </div>
+              </div>
+
+              <div class="adminCard" style="margin-top:20px;">
+                <div class="empRegHead"><h3>등록된 사업장</h3><button class="linkBtn" id="branchExcelBtn">+ excel 다운로드</button></div>
+                <ul class="employeeList" id="branchList">
+                  <li class="employeeList-empty">등록된 사업장이 없어요.</li>
+                </ul>
+              </div>
+            </section>
+
+            <!-- 인감·직인 -->
+            <section class="adminSection" id="adminSection-seal" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">인감·직인</h2>
+              <p class="sub" style="margin-bottom:24px;">등록된 사업장을 기준으로 법인인감·사용인감·직인 등을 사업장당 최대 5개까지 관리해요.</p>
+              <div class="adminCard">
+                <div id="sealMsg" class="msg"></div>
+                <div class="field"><label for="sealBranch">사업장</label><select id="sealBranch"><option value="">사업장을 먼저 등록해 주세요</option></select></div>
+                <div class="shFormGrid"><div class="field"><label for="sealType">구분</label><select id="sealType"><option>법인인감</option><option>사용인감</option><option>직인</option><option>부서인</option><option>기타</option></select></div><div class="field"><label for="sealName">인감명</label><input id="sealName" placeholder="예: 대표이사 직인"></div><div class="field"><label for="sealStatus">상태</label><select id="sealStatus"><option>사용중</option><option>사용중지</option></select></div><div class="field"><label for="sealDate">등록일</label><input type="date" id="sealDate"></div><div class="field full"><label for="sealImage">도장 이미지 (PNG/JPG)</label><input type="file" id="sealImage" accept="image/png,image/jpeg,image/webp"><div id="sealPreview" class="sealPreview">이미지 미리보기</div></div><div class="field full"><label for="sealNote">비고</label><input id="sealNote" placeholder="선택"></div></div>
+                <div class="btnRow"><button class="btn" id="sealSaveBtn">등록</button><button class="btn secondary" id="sealNewBtn">초기화</button></div>
+              </div>
+              <div class="adminCard" style="margin-top:20px;"><div class="empRegHead"><h3>등록된 인감·직인</h3><span class="sub" id="sealCount">0 / 5</span></div><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>미리보기</th><th>구분</th><th>인감명</th><th>상태</th><th>등록일</th><th>비고</th><th>관리</th></tr></thead><tbody id="sealList"><tr><td colspan="7" class="employeeList-empty">등록된 인감·직인이 없어요.</td></tr></tbody></table></div></div>
+            </section>
+
+            <!-- 계좌정보 -->
+            <section class="adminSection" id="adminSection-bank" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">계좌정보</h2>
+              <p class="sub" style="margin-bottom:24px;">등록된 사업장별로 회사 계좌를 관리해요. 해지된 계좌도 과거 기록을 위해 보존할 수 있어요.</p>
+              <div class="adminCard"><div id="bankMsg" class="msg"></div><div class="field"><label for="bankBranch">사업장</label><select id="bankBranch"><option value="">사업장을 먼저 등록해 주세요</option></select></div><div class="shFormGrid"><div class="field"><label for="bankName">은행명</label><input id="bankName" placeholder="예: 국민은행"></div><div class="field"><label for="bankAccount">계좌번호</label><input id="bankAccount"></div><div class="field"><label for="bankHolder">예금주</label><input id="bankHolder"></div><div class="field"><label for="bankPurpose">계좌용도</label><select id="bankPurpose"><option>운영계좌</option><option>급여계좌</option><option>매출입금</option><option>세금</option><option>법인카드 결제</option><option>기타</option></select></div><div class="field"><label for="bankCurrency">통화</label><select id="bankCurrency"><option>KRW</option><option>USD</option><option>JPY</option><option>EUR</option><option>기타</option></select></div><div class="field"><label for="bankStatus">상태</label><select id="bankStatus"><option>사용중</option><option>해지</option></select></div><div class="field"><label for="bankOpenDate">개설일</label><input type="date" id="bankOpenDate"></div><div class="field" id="bankCloseDateField" style="display:none;"><label for="bankCloseDate">해지일</label><input type="date" id="bankCloseDate"></div><div class="field checkboxField"><label><input type="checkbox" id="bankPrimary"> 주계좌</label></div><div class="field full"><label for="bankNote">비고</label><input id="bankNote"></div></div><div class="btnRow"><button class="btn" id="bankSaveBtn">등록</button><button class="btn secondary" id="bankNewBtn">초기화</button></div></div>
+              <div class="adminCard" style="margin-top:20px;"><div class="empRegHead"><h3>등록 계좌</h3><button class="linkBtn" id="bankExcelBtn">+ excel 다운로드</button></div><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>은행</th><th>계좌번호</th><th>예금주</th><th>용도</th><th>통화</th><th>주계좌</th><th>상태</th><th>관리</th></tr></thead><tbody id="bankList"><tr><td colspan="8" class="employeeList-empty">등록된 계좌가 없어요.</td></tr></tbody></table></div></div>
+            </section>
+
+            <!-- 주주명부 -->
+            <section class="adminSection" id="adminSection-shareholders" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">주주명부</h2>
+              <p class="sub" style="margin-bottom:20px;">사업장별 주주와 주식 보유현황을 관리해요. 개인·법인 정보를 구분하고 모든 등록·수정·삭제는 변경이력에 남아요.</p>
+              <div class="adminCard">
+                <div class="shTopRow"><div class="field"><label for="shBranchSelect">사업장</label><select id="shBranchSelect"><option value="">사업장을 먼저 등록해 주세요</option></select></div></div>
+                <div class="shTabs"><button class="shTab active" data-sh-tab="current">현재 주주명부</button><button class="shTab" data-sh-tab="history">변경이력</button></div>
+                <div id="shCurrentPanel">
+                  <div class="shSummary"><div class="shStat"><div class="shStat-label">주주 수</div><div class="shStat-value" id="shCount">0명</div></div><div class="shStat"><div class="shStat-label">발행주식 합계</div><div class="shStat-value" id="shTotalShares">0주</div></div><div class="shStat"><div class="shStat-label">지분율 합계</div><div class="shStat-value" id="shTotalRatio">0%</div></div><div class="shStat"><div class="shStat-label">주식가액 합계</div><div class="shStat-value" id="shTotalValue">0원</div></div></div>
+                  <div id="shMsg" class="msg"></div>
+                  <div class="shFormGrid">
+                    <div class="field"><label for="shType">주주 구분</label><select id="shType"><option value="개인">개인</option><option value="법인">법인</option></select></div>
+                    <div class="field"><label for="shName" id="shNameLabel">주주명</label><input type="text" id="shName" placeholder="성명"></div>
+                    <div class="field" id="shPersonalNoField"><label for="shPersonalNo">주민등록번호</label><input type="text" id="shPersonalNo" placeholder="000000-0000000"></div>
+                    <div class="field" id="shCorpNoField" style="display:none;"><label for="shCorpNo">법인등록번호</label><input type="text" id="shCorpNo" placeholder="000000-0000000"></div>
+                    <div class="field full"><label for="shAddress" id="shAddressLabel">주소</label><input type="text" id="shAddress" placeholder="주주 주소"></div>
+                    <div class="field"><label for="shPhone">연락처</label><input type="text" id="shPhone" placeholder="010-0000-0000"></div>
+                    <div class="field"><label for="shEmail">이메일</label><input type="text" id="shEmail" placeholder="이메일 (선택)"></div>
+                    <div class="field"><label for="shShareClass">주식 종류</label><select id="shShareClass"><option value="보통주">보통주</option><option value="우선주">우선주</option><option value="기타">기타</option></select></div>
+                    <div class="field"><label for="shShares">보유 주식수</label><input type="text" id="shShares" placeholder="예: 10000"></div>
+                    <div class="field"><label for="shPricePerShare">1주 금액(원)</label><input type="text" id="shPricePerShare" placeholder="예: 5000"></div>
+                    <div class="field"><label for="shRatio">지분율(%)</label><input type="text" id="shRatio" placeholder="예: 35.5"></div>
+                    <div class="field"><label for="shAcquireDate">취득일</label><input type="date" id="shAcquireDate"></div>
+                    <div class="field"><label for="shChangeReason">변동 사유</label><select id="shChangeReason"><option value="신규취득">신규취득</option><option value="양도">양도</option><option value="증자">증자</option><option value="감자">감자</option><option value="상속·증여">상속·증여</option><option value="기타">기타</option></select></div>
+                    <div class="field full"><label for="shNote">비고</label><input type="text" id="shNote" placeholder="특이사항 (선택)"></div>
+                  </div>
+                  <div class="sensitiveHint">주민등록번호·개인주소 등 민감정보가 포함될 수 있어요. 실제 서비스에서는 권한 분리·마스킹·암호화가 필요해요.</div>
+                  <div class="btnRow"><button class="btn" id="shSaveBtn">저장</button><button class="btn secondary" id="shNewBtn">+ 새 주주 추가</button></div>
+                  <div class="adminCard" style="margin-top:20px;padding:18px;"><div class="empRegHead"><h3>주주 목록</h3><button class="linkBtn" id="shExcelBtn">+ excel 다운로드</button></div><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>구분</th><th>주주명</th><th>주식종류</th><th>주식수</th><th>1주 금액</th><th>보유금액</th><th>지분율</th><th>취득일</th><th></th></tr></thead><tbody id="shareholderList"><tr><td colspan="9" class="employeeList-empty">등록된 주주가 없어요.</td></tr></tbody></table></div></div>
+                </div>
+                <div id="shHistoryPanel" style="display:none;"><div class="empRegHead"><h3>주주명부 변경이력</h3><button class="linkBtn" id="shHistoryExcelBtn">+ excel 다운로드</button></div><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>일시</th><th>사용자</th><th>행위</th><th>주주</th><th>상세</th></tr></thead><tbody id="shHistoryList"><tr><td colspan="5" class="employeeList-empty">변경이력이 없어요.</td></tr></tbody></table></div></div>
+              </div>
+            </section>
+
+            <!-- 조직 관리 -->
+            <section class="adminSection" id="adminSection-org" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">조직도</h2><p class="sub" style="margin-bottom:24px;">등록된 조직유형으로 실제 조직을 만들고 상하관계와 책임자를 지정해요. 조직유형은 「조직·인사 체계」에서 관리하며, 조직 책임자는 전자결재 자동 결재선의 기준이 됩니다.</p>
+              <div class="adminCard"><div id="deptMsg" class="msg"></div><div class="field"><label for="deptBranch">사업장</label><select id="deptBranch"><option value="">사업장을 먼저 등록해 주세요</option></select></div><div class="shFormGrid"><div class="field"><label for="deptName">조직명</label><input id="deptName" placeholder="예: 경영지원본부, 인사팀"></div><div class="field"><label for="deptType">조직유형</label><select id="deptType"><option>조직유형을 먼저 등록해 주세요</option></select></div><div class="field"><label for="deptParent">상위조직</label><select id="deptParent"><option value="">없음 (최상위 조직)</option></select></div><div class="field"><label for="deptLeader">조직 책임자</label><select id="deptLeader"><option value="">미지정</option></select></div><div class="field"><label for="deptStatus">상태</label><select id="deptStatus"><option>사용중</option><option>폐지</option></select></div></div><div class="sensitiveHint">전자결재는 기안자의 소속 조직 → 조직 책임자 → 상위조직 책임자 순으로 결재선을 찾을 수 있어요. 본인이 책임자라면 자기승인을 건너뛰고 상위 책임자로 올라가도록 설계합니다.</div><div class="btnRow"><button class="btn" id="deptSaveBtn">저장</button><button class="btn secondary" id="deptNewBtn">+ 새 조직 추가</button></div></div>
+              <div class="adminCard" style="margin-top:20px;"><div class="empRegHead"><h3>등록된 조직</h3><div class="empRegHead-actions"><button class="linkBtn" id="deptSelectDeleteBtn">선택 삭제</button><button class="linkBtn" id="deptExcelBtn">+ excel 다운로드</button></div></div><div class="empTableWrap"><table class="empRegTable"><thead><tr><th><input type="checkbox" id="deptCheckAll"></th><th>조직명</th><th>유형</th><th>상위조직</th><th>조직책임자</th><th>소속직원</th><th>상태</th><th>관리</th></tr></thead><tbody id="deptTree"><tr><td colspan="8" class="employeeList-empty">등록된 조직이 없어요.</td></tr></tbody></table></div></div>
+            </section>
+
+            <!-- 조직·인사 체계 -->
+            <section class="adminSection" id="adminSection-orgMaster" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">조직·인사 체계</h2><p class="sub" style="margin-bottom:18px;">조직도·직원등록·권한정책에서 공통으로 사용하는 마스터예요. 여기서 등록한 값을 다른 화면에서 직접 불러오므로 명칭을 수기로 중복 입력하지 않아요.</p>
+              <div class="shTabs" id="masterTabs"><button class="shTab active masterTab" data-master="조직유형">조직유형</button><button class="shTab masterTab" data-master="직급">직급</button><button class="shTab masterTab" data-master="직책">직책</button><button class="shTab masterTab" data-master="직무">직무</button><button class="shTab masterTab" data-master="고용형태">고용형태</button></div>
+              <div class="adminCard"><div class="shFormGrid"><div class="field"><label>구분</label><input id="masterTypeView" value="조직유형" disabled></div><div class="field"><label>코드</label><input id="masterCode" placeholder="예: ORG_HQ"></div><div class="field"><label>명칭</label><input id="masterName" placeholder="예: 본부"></div><div class="field"><label>표시 순서</label><input id="masterOrder" type="number" value="1"></div><div class="field"><label>사용상태</label><select id="masterStatus"><option>사용</option><option>사용중지</option></select></div></div><div class="sensitiveHint" id="masterHint">조직유형 예: 본부 · 사업부 · 실 · 부 · 팀 · 센터 · 파트. 저장하면 조직도 등록 화면의 조직유형 선택값에 바로 연결됩니다.</div><div class="btnRow"><button class="btn" id="masterSaveBtn">저장</button><button class="btn secondary" id="masterResetBtn">초기화</button></div></div>
+              <div class="adminCard" style="margin-top:20px;"><div class="empRegHead"><h3 id="masterListTitle">조직유형 목록</h3><span class="sub">사용중지는 기존 이력을 유지하면서 신규 선택목록에서 제외하는 용도예요.</span></div><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>코드</th><th>명칭</th><th>순서</th><th>상태</th><th>사용처</th><th>관리</th></tr></thead><tbody id="masterList"></tbody></table></div></div>
+            </section>
+
+            <!-- 직원 관리 -->
+            <section class="adminSection" id="adminSection-employees" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">직원관리</h2><p class="sub" style="margin-bottom:18px;">신규 직원 등록·계정발급부터 직원별 인사프로필까지 한 곳에서 관리해요.</p>
+              <div class="shTabs"><button class="shTab active empMainTab" data-emp-tab="register">직원등록</button><button class="shTab empMainTab" data-emp-tab="list">직원목록</button></div>
+              <div id="empRegisterPanel" class="adminCard">
+                <div class="empRegHead"><h3>신규 직원등록</h3><div class="empRegHead-actions"><button class="linkBtn" id="empTemplateBtn">+ 신규직원 Excel 양식</button><label class="linkBtn" for="empExcelInput">+ 신규직원 Excel 업로드</label><input type="file" id="empExcelInput" accept=".xlsx,.xls" style="display:none;"></div></div>
+                <div class="empTableWrap"><table class="empRegTable"><thead><tr><th><input type="checkbox" id="empRegCheckAll"></th><th>구분</th><th>이름</th><th>영문명</th><th>주민번호</th><th>전화번호</th><th>비상연락처</th><th>관계</th><th>이메일주소</th><th>최초입사일</th><th>입사일</th><th>사업장</th><th>본부</th><th>부서</th><th>직급</th><th>직책</th></tr></thead><tbody id="empRegBody"></tbody></table></div><div id="empRegMsg" class="msg"></div><div class="btnRow"><button class="btn secondary" id="empRegAddBtn">+ 추가</button><button class="btn secondary" id="empRegRemoveBtn">선택 삭제</button><button class="btn" id="empIssueBtn">선택 계정발급</button></div>
+              </div>
+              <div id="empListPanel" class="adminCard" style="display:none;">
+                <div class="empRegHead"><h3>직원목록</h3><div class="empRegHead-actions"><button class="linkBtn" id="hrCardTemplateBtn">+ 인사카드 Excel 양식</button><label class="linkBtn" for="hrCardExcelInput">+ 인사카드 Excel 업로드</label><input type="file" id="hrCardExcelInput" accept=".xlsx,.xls" style="display:none;"><button class="linkBtn" id="empListExcelBtn">+ 직원목록 Excel</button></div></div>
+                <div class="empStats"><span>전체직원 <b id="empStatAll">0</b>명</span><span>재직자 <b id="empStatActive">0</b>명</span><span>휴직자 <b id="empStatLeave">0</b>명</span><span>퇴사자 <b id="empStatResigned">0</b>명</span></div>
+                <div class="empFilterRow"><label>입사일 <input type="date" id="empFilterFrom"> ~ <input type="date" id="empFilterTo"></label><input type="text" id="empFilterName" placeholder="이름"><select id="empFilterStatus"><option value="">전체 상태</option><option>재직</option><option>휴직</option><option>퇴사</option></select><button class="btn" id="empSearchBtn">조회</button><button class="btn secondary" id="empSearchResetBtn">초기화</button></div>
+                <div class="empTableWrap"><table class="empRegTable"><thead><tr><th><input type="checkbox" id="empListCheckAll"></th><th>사원번호</th><th>이름</th><th>사업장</th><th>부서</th><th>직급</th><th>직책</th><th>입사일</th><th>인증</th><th>상태</th><th>관리</th></tr></thead><tbody id="employeeList"><tr><td colspan="11" class="employeeList-empty">불러오는 중...</td></tr></tbody></table></div>
+              </div>
+            </section>
+
+            <!-- 직원 인사프로필 -->
+            <section class="adminSection" id="adminSection-employeeProfile" style="display:none;"><button class="linkBtn" id="profileBackBtn">← 직원목록</button><div class="profileHero"><div><h2 id="profileName">직원 인사프로필</h2><p id="profileMeta" class="sub"></p></div><span class="statusPill" id="profileStatus">재직</span></div><div class="profileTabs" id="profileTabs"></div><div class="adminCard" id="profileContent"></div></section>
+
+            <!-- 인사기준 관리 -->
+            <section class="adminSection" id="adminSection-hrstandards" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">인사기준 관리</h2><p class="sub" style="margin-bottom:18px;">귀속연월에 맞춰 급여·보험·연차 계산에 자동 적용할 기준 DB를 관리해요. 과거 기준은 덮어쓰지 않고 적용기간과 버전으로 보관해요.</p>
+              <div class="hrStdTabs" id="hrStdTabs"><button class="hrStdTab active" data-cat="4대보험 기준">4대보험 기준</button><button class="hrStdTab" data-cat="급여항목 관리">급여항목 관리</button><button class="hrStdTab" data-cat="급여·세무 기준">급여·세무 기준</button><button class="hrStdTab" data-cat="연차·휴가 기준">연차·휴가 기준</button><button class="hrStdTab" data-cat="근무 기준">근무 기준</button></div>
+              <div class="adminCard"><div id="hrStdMsg" class="msg"></div><div class="shFormGrid"><div class="field"><label for="hrStdYear">기준연도</label><input type="number" id="hrStdYear" min="2000" max="2100"></div><div class="field"><label for="hrStdCategory">기준구분</label><select id="hrStdCategory"><option>4대보험 기준</option><option>급여항목 관리</option><option>급여·세무 기준</option><option>연차·휴가 기준</option><option>근무 기준</option></select></div><div class="field"><label for="hrStdName">기준명</label><input id="hrStdName" placeholder="예: 2026년 4대보험 기준"></div><div class="field"><label for="hrStdSource">성격</label><select id="hrStdSource"><option>법정·공통 기준</option><option>회사 정책</option></select></div><div class="field"><label for="hrStdFrom">적용 시작일</label><input type="date" id="hrStdFrom"></div><div class="field"><label for="hrStdTo">적용 종료일</label><input type="date" id="hrStdTo"></div><div class="field"><label for="hrStdVersion">버전</label><input id="hrStdVersion" placeholder="예: v1"></div><div class="field"><label for="hrStdStatus">상태</label><select id="hrStdStatus"><option>초안</option><option>검토</option><option>적용중</option><option>종료</option></select></div></div><div id="hrStdDynamic" class="stdPanel"></div><div class="btnRow"><button class="btn" id="hrStdSaveBtn">저장</button><button class="btn secondary" id="hrStdCopyBtn">전년도 기준 복사</button><button class="btn secondary" id="hrStdNewBtn">초기화</button></div></div>
+              <div class="adminCard" style="margin-top:20px;"><div class="empRegHead"><h3>연도·적용기간별 기준 DB</h3><button class="linkBtn" id="hrStdExcelBtn">+ excel 다운로드</button></div><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>연도</th><th>구분</th><th>기준명</th><th>성격</th><th>적용기간</th><th>버전</th><th>상태</th><th>관리</th></tr></thead><tbody id="hrStdList"><tr><td colspan="8" class="employeeList-empty">등록된 기준이 없어요.</td></tr></tbody></table></div></div>
+            </section>
+
+            <!-- 근태관리 -->
+            <section class="adminSection" id="adminSection-attendance" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">근태관리</h2>
+              <p class="sub" style="margin-bottom:24px;">준비 중이에요. 출퇴근, 연차 사용 현황을 관리하는 화면이 될 거예요.</p>
+              <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 급여관리 -->
+            <section class="adminSection" id="adminSection-payroll" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">급여관리</h2>
+              <p class="sub" style="margin-bottom:24px;">준비 중이에요. 급여 기준(세팅)과 매월 급여 지급 내역을 여기서 관리하게 될 거예요.</p>
+              <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 세금계산서 관리 -->
+            <section class="adminSection" id="adminSection-tax" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">세금계산서 관리</h2>
+              <p class="sub" style="margin-bottom:24px;">사업장을 선택하고, 그 사업장의 세금계산서 담당자 정보를 등록하세요. 홈택스처럼 이메일 2개까지 등록할 수 있어요.</p>
+
+              <div class="adminCard">
+                <div id="settingsMsg" class="msg"></div>
+                <div class="field">
+                  <label for="taxBranchSelect">사업장</label>
+                  <select id="taxBranchSelect">
+                    <option value="">사업장을 먼저 등록해 주세요</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="taxEmail1">담당자 이메일 1</label>
+                  <input type="text" id="taxEmail1" placeholder="이메일 주소">
+                </div>
+                <div class="field">
+                  <label for="taxEmail2">담당자 이메일 2 (선택)</label>
+                  <input type="text" id="taxEmail2" placeholder="이메일 주소">
+                </div>
+                <div class="field">
+                  <label for="taxPhone">담당자 연락처</label>
+                  <input type="text" id="taxPhone" placeholder="010-0000-0000">
+                </div>
+                <button class="btn" id="settingsSaveBtn">저장</button>
+              </div>
+            </section>
+
+            <!-- 지출결의/경비관리 -->
+            <section class="adminSection" id="adminSection-expense" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">지출결의/경비관리</h2>
+              <p class="sub" style="margin-bottom:24px;">준비 중이에요. 직원이 올린 지출결의서를 확인·정산하는 화면이 될 거예요.</p>
+              <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 매출·매입 관리 -->
+            <section class="adminSection" id="adminSection-sales" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">매출·매입 관리</h2>
+              <p class="sub" style="margin-bottom:24px;">준비 중이에요. 거래처별 매출·매입 내역을 기록하는 화면이 될 거예요.</p>
+              <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 예산관리 -->
+            <section class="adminSection" id="adminSection-budget" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">예산관리</h2>
+              <p class="sub" style="margin-bottom:24px;">준비 중이에요. 부서별/항목별 예산과 집행 현황을 관리하는 화면이 될 거예요.</p>
+              <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 보안/권한 -->
+            <section class="adminSection" id="adminSection-permissionCatalog" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">권한 목록</h2><p class="sub" style="margin-bottom:18px;">사이트 기능과 1:1로 연결되는 Permission 원장입니다. 관리자가 이름을 임의로 입력하는 값이 아니라 시스템 기능이 추가될 때 함께 등록되는 권한키예요.</p>
+              <div class="adminCard"><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>영역</th><th>기능</th><th>Permission Key</th><th>민감도</th><th>설명</th></tr></thead><tbody id="permissionCatalogList"></tbody></table></div></div>
+            </section>
+            <section class="adminSection" id="adminSection-permissionGroups" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">권한 그룹</h2><p class="sub" style="margin-bottom:18px;">권한 목록의 여러 Permission을 하나의 업무 Role로 묶어요. 하나의 그룹에 직원관리·근태관리·급여관리 권한을 동시에 넣을 수 있습니다.</p>
+              <div class="adminCard"><div class="shFormGrid"><div class="field"><label>그룹명(Role)</label><input id="permGroupName" placeholder="예: 급여담당자"></div><div class="field"><label>기본 Scope</label><select id="permGroupScope"><option>본인</option><option>소속조직</option><option>소속본부</option><option>특정 사업장</option><option>특정 법인</option><option>전사</option></select></div><div class="field"><label>사용상태</label><select id="permGroupStatus"><option>사용</option><option>사용중지</option></select></div></div><div class="field" style="margin-top:14px;"><label>포함할 기능 권한</label><div id="permissionPicker" style="border:1px solid #ddd8d1;border-radius:10px;padding:14px;max-height:330px;overflow:auto;background:#fff;"></div></div><div class="btnRow"><button class="btn" id="permGroupSaveBtn">권한 그룹 저장</button></div></div>
+              <div class="adminCard" style="margin-top:20px;"><h3>권한 그룹 목록</h3><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>Role</th><th>포함 Permission</th><th>Scope</th><th>상태</th></tr></thead><tbody id="permGroupList"></tbody></table></div></div>
+            </section>
+            <section class="adminSection" id="adminSection-permissionPolicy" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">권한 정책</h2><p class="sub" style="margin-bottom:18px;">이미 만든 권한그룹(Role)에 “누가 신청할 수 있는지”를 연결합니다. 조직은 조직도, 직무는 조직·인사 체계 데이터를 그대로 불러옵니다.</p>
+              <div class="adminCard"><div class="shFormGrid"><div class="field"><label>정책명</label><input id="policyName" placeholder="예: 급여담당자 신청정책"></div><div class="field"><label>대상 권한그룹</label><select id="policyGroup"><option value="">권한그룹을 먼저 등록해 주세요</option></select></div><div class="field"><label>민감도</label><select id="policySensitivity"><option>일반</option><option>중요</option><option>민감</option><option>매우 민감</option></select></div><div class="field"><label>예외신청</label><select id="policyException"><option>불가</option><option>특별권한 신청으로 허용</option></select></div></div>
+              <div class="shFormGrid" style="margin-top:14px;"><div class="field full"><label>신청 가능 조직 <span class="sub">— 조직도 연동 / 복수선택</span></label><div id="policyOrgPicker" style="border:1px solid #ddd8d1;border-radius:10px;padding:12px;max-height:190px;overflow:auto;background:#fff;"></div></div><div class="field full"><label>신청 가능 직무 <span class="sub">— 직무 마스터 연동 / 복수선택</span></label><div id="policyJobPicker" style="border:1px solid #ddd8d1;border-radius:10px;padding:12px;max-height:160px;overflow:auto;background:#fff;"></div></div></div>
+              <div class="sensitiveHint">정책 저장 시 조직명/직무명이 아니라 내부 ID를 연결합니다. 조직명이 바뀌어도 연결은 유지되고, 신청·승인이 끝난 뒤 권한 활성화 직전에도 이 자격조건을 다시 검사하는 구조입니다.</div><div class="btnRow"><button class="btn" id="policySaveBtn">정책 저장</button></div></div>
+              <div class="adminCard" style="margin-top:20px;"><h3>권한 정책 목록</h3><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>정책명</th><th>대상 Role</th><th>신청 가능 조직</th><th>신청 가능 직무</th><th>민감도</th><th>예외</th></tr></thead><tbody id="policyList"></tbody></table></div></div>
+            </section>
+            <section class="adminSection" id="adminSection-grant" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">권한 부여</h2><p class="sub" style="margin-bottom:18px;">직원의 최종권한을 확인해요. 기본권한 + 조직/직책권한 + 승인받은 업무권한 + 직접부여권한을 합산하고 Scope와 유효기간을 적용합니다.</p>
+              <div class="adminCard"><div class="empFilterRow"><input id="grantSearch" placeholder="사원번호 또는 이름"><button class="btn" id="grantSearchBtn">조회</button></div><div class="sensitiveHint">직급이 높다고 급여권한이 자동으로 생기지 않아요. 조직상 결재권과 업무 데이터 접근권한은 분리합니다.</div><div id="grantResult" class="adminCard-placeholder" style="margin-top:14px;">직원을 조회하면 기본권한 / 조직권한 / 업무권한 / 직접부여권한 / Scope를 한 화면에서 확인하게 됩니다.</div></div>
+            </section>
+            <section class="adminSection" id="adminSection-permissionRequests" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">권한신청 관리</h2><p class="sub" style="margin-bottom:18px;">직원이 신청한 추가 업무권한을 검토해요. 승인되더라도 신청자격 정책을 최종 검증한 뒤에만 활성화합니다.</p><div class="adminCard"><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>신청일</th><th>신청자</th><th>소속</th><th>권한</th><th>Scope</th><th>기간</th><th>상태</th></tr></thead><tbody id="permissionRequestAdminList"><tr><td colspan="7" class="employeeList-empty">권한신청 내역이 없어요.</td></tr></tbody></table></div></div>
+            </section>
+            <section class="adminSection" id="adminSection-levels" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">레벨 설정</h2><p class="sub" style="margin-bottom:18px;">Level은 권한 그 자체가 아니라 계정의 기본 관리등급이에요. 실제 메뉴 접근은 Role / Permission / Scope로 결정합니다.</p>
+              <div class="adminCard"><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>Level</th><th>기본명</th><th>설명</th></tr></thead><tbody><tr><td>L1</td><td>일반 사용자</td><td>전 직원 공통 기본권한</td></tr><tr><td>L2</td><td>운영 관리자</td><td>일부 시스템 운영기능 담당</td></tr><tr><td>L3</td><td>시스템 관리자</td><td>권한·정책 등 시스템 관리</td></tr><tr><td>L4</td><td>최고 관리자</td><td>최상위 시스템 관리 계정</td></tr></tbody></table></div></div>
+            </section>
+            <section class="adminSection" id="adminSection-accessLog" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">접근 이력</h2><p class="sub" style="margin-bottom:18px;">민감정보 조회·다운로드·권한 변경을 별도로 추적하는 감사영역이에요.</p><div class="adminCard"><div class="empTableWrap"><table class="empRegTable"><thead><tr><th>일시</th><th>사용자</th><th>영역</th><th>Action</th><th>Scope/대상</th></tr></thead><tbody><tr><td colspan="5" class="employeeList-empty">접근 이력이 없어요.</td></tr></tbody></table></div></div>
+            </section>
+
+            <!-- 메뉴 관리 -->
+            <section class="adminSection" id="adminSection-menu" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">메뉴 관리</h2>
+              <p class="sub" style="margin-bottom:24px;">준비 중이에요. 상단 메뉴에 뭐가 보일지, 어떤 순서로 보일지 여기서 조절하게 될 거예요.</p>
+              <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 설정 -->
+            <section class="adminSection" id="adminSection-settings" style="display:none;">
+              <h2 class="dashGreeting" style="margin-bottom:8px;">설정</h2>
+              <p class="sub" style="margin-bottom:24px;">그 밖에 회사 운영에 필요한 기본값들이 여기 모일 거예요.</p>
+              <div class="adminCard adminCard-placeholder">🚧 곧 만들어질 화면이에요</div>
+            </section>
+
+            <!-- 변경이력 -->
+            <section class="adminSection" id="adminSection-activity" style="display:none;">
+              <div class="empRegHead">
+                <h2 class="dashGreeting" style="margin-bottom:0;">변경이력</h2>
+                <button class="linkBtn" id="activityExcelBtn">+ excel 다운로드</button>
+              </div>
+              <p class="sub" style="margin-bottom:24px;">등록·수정·삭제·요청·승인 같은 모든 행위가 여기 기록돼요.</p>
+              <div class="adminCard">
+                <div class="empTableWrap">
+                  <table class="empRegTable">
+                    <thead>
+                      <tr><th>일시</th><th>사용자</th><th>행위</th><th>대상</th><th>상세</th></tr>
+                    </thead>
+                    <tbody id="activityList">
+                      <tr><td colspan="5" class="employeeList-empty">불러오는 중...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- 전자결재함 (문서 승인 요청) -->
+      <div id="approvalCenterView" style="display:none;">
+        <button class="btn secondary" id="approvalBackBtn" style="max-width:120px; margin-bottom:24px;">← 대시보드로</button>
+        <h2 class="dashGreeting" style="margin-bottom:8px;">전자결재</h2>
+        <p class="sub" style="margin-bottom:24px;">사업장 정보 삭제처럼 승인이 필요한 문서 요청이 여기 모여요.</p>
+        <div class="adminCard">
+          <ul class="employeeList" id="approvalList">
+            <li class="employeeList-empty">불러오는 중...</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script>
+  // ============================================
+  // Supabase 연결 — 진짜 데이터베이스에 저장돼요.
+  // key-value 방식(kv_store 테이블)이라 앱 코드는 거의 그대로 써요.
+  // ============================================
+  const SUPABASE_URL = 'https://lwtizpydwkovbfkoavwx.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_xotKIqM7yUIMwadfntE7nA_wV9M1CTd';
+
+  (function installSupabaseStorage(){
+    try{
+      if(typeof window.supabase === 'undefined') return; // 라이브러리 로드 실패 시 그냥 다음 폴백으로 넘어감
+      const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      window.storage = {
+        async get(key){
+          const { data, error } = await sb.from('kv_store').select('value').eq('key', key).maybeSingle();
+          if(error) throw new Error('Storage get failed: ' + error.message);
+          if(!data){ const e = new Error('not found: ' + key); throw e; }
+          return { key, value: data.value, shared: false };
+        },
+        async set(key, value){
+          const { error } = await sb.from('kv_store').upsert({ key, value, updated_at: new Date().toISOString() });
+          if(error) throw new Error('Storage set failed: ' + error.message);
+          return { key, value, shared: false };
+        },
+        async delete(key){
+          const { error } = await sb.from('kv_store').delete().eq('key', key);
+          if(error) throw new Error('Storage delete failed: ' + error.message);
+          return { key, deleted: true, shared: false };
+        },
+        async list(prefix){
+          let q = sb.from('kv_store').select('key');
+          if(prefix) q = q.like('key', prefix + '%');
+          const { data, error } = await q;
+          if(error) throw new Error('Storage list failed: ' + error.message);
+          return { keys: (data || []).map(r => r.key), prefix, shared: false };
+        }
+      };
+    }catch(e){ /* 실패하면 아래 폴백 로직이 대신 처리해요 */ }
+  })();
+
+  // window.storage가 없거나, 있어도 실제로 동작하지 않는 환경이면
+  // 최소한 지금 세션에서는 작동하도록 메모리 기반 임시 저장소로 자동 전환해요.
+  // (새로고침하면 초기화돼요 — 정상 환경에서는 안 쓰여요)
+  let usingMemoryFallback = false;
+
+  function installMemoryFallback(){
+    usingMemoryFallback = true;
+    const memStore = {};
+    window.storage = {
+      async get(key){
+        if(!(key in memStore)){ const err = new Error('not found: ' + key); throw err; }
+        return { key, value: memStore[key], shared: false };
+      },
+      async set(key, value){
+        memStore[key] = value;
+        return { key, value, shared: false };
+      },
+      async delete(key){
+        const existed = key in memStore;
+        delete memStore[key];
+        return { key, deleted: existed, shared: false };
+      },
+      async list(prefix){
+        const keys = Object.keys(memStore).filter(k => !prefix || k.startsWith(prefix));
+        return { keys, prefix, shared: false };
+      }
+    };
+  }
+
+  const storageReadyPromise = (async () => {
+    if(typeof window.storage === 'undefined' || window.storage === null){
+      installMemoryFallback();
+      return;
+    }
+    try{
+      const testKey = '__storage_test__' + Date.now();
+      await window.storage.set(testKey, '1');
+      await window.storage.get(testKey);
+      window.storage.delete(testKey).catch(() => {});
+    }catch(e){
+      installMemoryFallback();
+    }
+  })();
+
+  const msgBox = document.getElementById('msgBox');
+  const loginView = document.getElementById('loginView');
+  const findIdView = document.getElementById('findIdView');
+  const findPwView = document.getElementById('findPwView');
+  const allViews = [loginView, findIdView, findPwView];
+
+  function showView(view){
+    clearMsg();
+    allViews.forEach(v => v.style.display = (v === view ? 'block' : 'none'));
+  }
+
+  function showMsg(text, type){
+    msgBox.textContent = text;
+    msgBox.className = 'msg ' + type;
+  }
+  function clearMsg(){
+    msgBox.className = 'msg';
+    msgBox.textContent = '';
+  }
+
+  document.getElementById('toFindId').onclick = () => showView(findIdView);
+  document.getElementById('toFindPw').onclick = () => showView(findPwView);
+  document.getElementById('fiToLogin').onclick = () => showView(loginView);
+  document.getElementById('fpToLogin').onclick = () => showView(loginView);
+
+  /* ---- Base32 + TOTP (RFC 6238), compatible with authenticator apps ---- */
+  const B32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+  function bytesToBase32(bytes){
+    let bits = '';
+    for(const b of bytes) bits += b.toString(2).padStart(8,'0');
+    let out = '';
+    for(let i=0; i+5<=bits.length; i+=5) out += B32_ALPHABET[parseInt(bits.substr(i,5),2)];
+    if(bits.length % 5 !== 0){
+      const rem = bits.length % 5;
+      out += B32_ALPHABET[parseInt(bits.substr(bits.length-rem).padEnd(5,'0'),2)];
+    }
+    return out;
+  }
+  function base32ToBytes(b32){
+    b32 = b32.replace(/=+$/,'').toUpperCase();
+    let bits = '';
+    for(const ch of b32){
+      const v = B32_ALPHABET.indexOf(ch);
+      if(v === -1) continue;
+      bits += v.toString(2).padStart(5,'0');
+    }
+    const bytes = [];
+    for(let i=0; i+8<=bits.length; i+=8) bytes.push(parseInt(bits.substr(i,8),2));
+    return new Uint8Array(bytes);
+  }
+  function generateSecret(){
+    const bytes = new Uint8Array(10);
+    crypto.getRandomValues(bytes);
+    return bytesToBase32(bytes);
+  }
+
+  /* ---- 숫자 자동 하이픈 포맷 (전화번호 3-4-4 / 사업자번호 3-2-5 / 주민·법인번호 6-7) ---- */
+  function formatByPattern(raw, groups){
+    const digits = raw.replace(/[^0-9]/g, '');
+    let out = '';
+    let idx = 0;
+    for(let i=0; i<groups.length; i++){
+      const seg = digits.slice(idx, idx + groups[i]);
+      if(!seg) break;
+      out += (i > 0 && out ? '-' : '') + seg;
+      idx += groups[i];
+    }
+    return out;
+  }
+  function attachAutoFormat(el, groups){
+    if(!el || el.dataset.autoFormatBound) return;
+    el.dataset.autoFormatBound = '1';
+    el.addEventListener('input', () => {
+      const atEnd = el.selectionStart === el.value.length;
+      el.value = formatByPattern(el.value, groups);
+      if(atEnd) el.setSelectionRange(el.value.length, el.value.length);
+    });
+  }
+  const FMT_PHONE = [3,4,4];
+  const FMT_BIZNO = [3,2,5];
+  const FMT_SSN = [6,7];
+  const FMT_CORPNO = [6,7];
+
+  function exportRowsToExcel(filename, headers, rows){
+    const aoa = [headers, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '목록');
+    XLSX.writeFile(wb, filename);
+  }
+
+  async function logActivity(action, target, detail){
+    try{
+      const id = 'a' + Date.now() + Math.random().toString(36).slice(2,6);
+      await window.storage.set('activity:' + id, JSON.stringify({
+        at: new Date().toISOString(),
+        actor: currentUserId || '-',
+        action, target, detail: detail || ''
+      }));
+    }catch(e){ /* ignore */ }
+  }
+
+  async function hotp(secretBytes, counter, digits=6){
+    const buf = new ArrayBuffer(8);
+    const view = new DataView(buf);
+    view.setUint32(0, Math.floor(counter / 2**32));
+    view.setUint32(4, counter >>> 0);
+    const key = await crypto.subtle.importKey('raw', secretBytes, {name:'HMAC', hash:'SHA-1'}, false, ['sign']);
+    const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, buf));
+    const offset = sig[sig.length-1] & 0xf;
+    const bin = ((sig[offset] & 0x7f) << 24) | ((sig[offset+1] & 0xff) << 16) | ((sig[offset+2] & 0xff) << 8) | (sig[offset+3] & 0xff);
+    return String(bin % (10 ** digits)).padStart(digits, '0');
+  }
+  async function verifyTotp(secretBase32, code, period=30){
+    const bytes = base32ToBytes(secretBase32);
+    const counter = Math.floor(Date.now() / 1000 / period);
+    for(let w=-1; w<=1; w++){
+      if(await hotp(bytes, counter + w) === code) return true;
+    }
+    return false;
+  }
+
+  /* ---- Seed a demo account (as the 대표자/admin) so you can test without a signup screen ---- */
+  window.__lastStorageError = null;
+
+  async function ensureDemoAccount(){
+    try{
+      const existing = await window.storage.get('account:demo').catch(() => null);
+      if(existing){
+        const data = JSON.parse(existing.value);
+        if(!data.role){
+          data.role = 'admin';
+          await window.storage.set('account:demo', JSON.stringify(data));
+        }
+        return;
+      }
+      const secret = generateSecret();
+      await window.storage.set('account:demo', JSON.stringify({
+        pw: '1234', name: '데모 관리자', email: 'demo@mouff.com', totpSecret: secret, role: 'admin'
+      }));
+    }catch(e){
+      window.__lastStorageError = (e && e.message) ? e.message : String(e);
+    }
+  }
+  storageReadyPromise.then(() => {
+    ensureDemoAccount();
+    if(usingMemoryFallback){
+      document.getElementById('storageWarning').style.display = 'block';
+    }
+  });
+
+  document.getElementById('findIdBtn').onclick = async () => {
+    const name = document.getElementById('fiName').value.trim();
+    const email = document.getElementById('fiEmail').value.trim();
+    if(!name || !email){
+      showMsg('이름과 이메일을 모두 입력해 주세요.', 'error');
+      return;
+    }
+    const btn = document.getElementById('findIdBtn');
+    btn.disabled = true;
+    btn.textContent = '찾는 중...';
+    try{
+      const listResult = await window.storage.list('account:');
+      const keys = listResult ? listResult.keys : [];
+      let foundId = null;
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        const data = JSON.parse(rec.value);
+        if(data.name === name && data.email === email){
+          foundId = key.replace('account:', '');
+          break;
+        }
+      }
+      if(foundId){
+        showMsg('회원님의 아이디는 "' + foundId + '" 입니다.', 'success');
+      } else {
+        showMsg('일치하는 계정을 찾지 못했어요. 입력 내용을 확인해 주세요.', 'error');
+      }
+    }catch(e){
+      showMsg('조회 중 문제가 생겼어요. 다시 시도해 주세요.', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = '아이디 찾기';
+  };
+
+  let verifiedResetId = null;
+
+  document.getElementById('findPwVerifyBtn').onclick = async () => {
+    const id = document.getElementById('fpId').value.trim();
+    const email = document.getElementById('fpEmail').value.trim();
+    if(!id || !email){
+      showMsg('아이디와 이메일을 모두 입력해 주세요.', 'error');
+      return;
+    }
+    const btn = document.getElementById('findPwVerifyBtn');
+    btn.disabled = true;
+    btn.textContent = '확인 중...';
+    try{
+      const rec = await window.storage.get('account:' + id);
+      const data = rec ? JSON.parse(rec.value) : null;
+      if(data && data.email === email){
+        showMsg('본인 확인이 완료됐어요. 새 비밀번호를 입력해 주세요.', 'success');
+        verifiedResetId = id;
+        document.getElementById('fpResetFields').style.display = 'block';
+      } else {
+        showMsg('아이디 또는 이메일이 일치하지 않아요.', 'error');
+        document.getElementById('fpResetFields').style.display = 'none';
+      }
+    }catch(e){
+      showMsg('등록된 계정이 없어요.', 'error');
+      document.getElementById('fpResetFields').style.display = 'none';
+    }
+    btn.disabled = false;
+    btn.textContent = '본인 확인';
+  };
+
+  document.getElementById('resetPwBtn').onclick = async () => {
+    const pw1 = document.getElementById('fpNewPw').value;
+    const pw2 = document.getElementById('fpNewPw2').value;
+    if(!pw1 || !pw2){
+      showMsg('새 비밀번호를 입력해 주세요.', 'error');
+      return;
+    }
+    if(pw1 !== pw2){
+      showMsg('비밀번호가 서로 달라요. 다시 확인해 주세요.', 'error');
+      return;
+    }
+    try{
+      const rec = await window.storage.get('account:' + verifiedResetId);
+      const data = JSON.parse(rec.value);
+      data.pw = pw1;
+      await window.storage.set('account:' + verifiedResetId, JSON.stringify(data));
+      showMsg('비밀번호가 변경됐어요. 새 비밀번호로 로그인해 주세요.', 'success');
+      document.getElementById('fpResetFields').style.display = 'none';
+      document.getElementById('fpId').value = '';
+      document.getElementById('fpEmail').value = '';
+      document.getElementById('fpNewPw').value = '';
+      document.getElementById('fpNewPw2').value = '';
+      setTimeout(() => {
+        showView(loginView);
+        document.getElementById('loginId').value = verifiedResetId;
+      }, 1200);
+    }catch(e){
+      showMsg('변경 중 문제가 생겼어요. 다시 시도해 주세요.', 'error');
+    }
+  };
+
+  document.getElementById('loginBtn').onclick = async () => {
+    const id = document.getElementById('loginId').value.trim();
+    const pw = document.getElementById('loginPw').value;
+    if(!id || !pw){
+      showMsg('아이디와 비밀번호를 모두 입력해 주세요.', 'error');
+      return;
+    }
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.textContent = '확인 중...';
+    try{
+      await storageReadyPromise;
+      if(id === 'demo') await ensureDemoAccount();
+      const result = await window.storage.get('account:' + id);
+      const account = result ? JSON.parse(result.value) : null;
+      if(!account || account.pw !== pw){
+        showMsg('아이디 또는 비밀번호가 올바르지 않아요.', 'error');
+      } else {
+        clearMsg();
+        document.getElementById('loginId').value = '';
+        document.getElementById('loginPw').value = '';
+        openOtpModal(id, account);
+      }
+    }catch(e){
+      const detail = (e && e.message) ? e.message : String(e);
+      const seedDetail = window.__lastStorageError ? (' / 시딩오류: ' + window.__lastStorageError) : '';
+      showMsg('등록된 계정이 없어요. [진단: ' + detail + seedDetail + ']', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = '로그인';
+  };
+
+  /* ---- OTP: authenticator app (TOTP) + SMS fallback ---- */
+  let pendingLoginId = null;
+  let pendingAccount = null;
+  let smsCode = null;
+
+  const otpTabApp = document.getElementById('otpTabApp');
+  const otpTabSms = document.getElementById('otpTabSms');
+  const otpAppPanel = document.getElementById('otpAppPanel');
+  const otpSmsPanel = document.getElementById('otpSmsPanel');
+
+  function switchOtpTab(tab){
+    const isApp = tab === 'app';
+    otpTabApp.classList.toggle('active', isApp);
+    otpTabSms.classList.toggle('active', !isApp);
+    otpAppPanel.style.display = isApp ? 'block' : 'none';
+    otpSmsPanel.style.display = isApp ? 'none' : 'block';
+    if(!isApp && smsCode === null) sendSmsCode();
+  }
+  otpTabApp.onclick = () => switchOtpTab('app');
+  otpTabSms.onclick = () => switchOtpTab('sms');
+
+  function sendSmsCode(){
+    smsCode = String(Math.floor(100000 + Math.random() * 900000));
+    document.getElementById('otpSmsHint').textContent =
+      '데모 환경이라 실제 문자 대신 여기 코드를 보여드려요: ' + smsCode;
+    document.getElementById('otpSmsInput').value = '';
+    document.getElementById('otpMsgSms').className = 'msg';
+  }
+
+  function openOtpModal(id, account){
+    pendingLoginId = id;
+    pendingAccount = account;
+    smsCode = null;
+    document.getElementById('otpAppInput').value = '';
+    document.getElementById('otpMsgApp').className = 'msg';
+    document.getElementById('otpSecretBox').style.display = 'none';
+    document.getElementById('otpSecretBox').textContent = '';
+    switchOtpTab('app');
+    document.getElementById('otpModal').style.display = 'flex';
+    document.getElementById('otpAppInput').focus();
+  }
+
+  function closeOtpModal(){
+    document.getElementById('otpModal').style.display = 'none';
+    pendingLoginId = null;
+    pendingAccount = null;
+    smsCode = null;
+  }
+
+  let currentUserId = null;
+  let currentUserRole = null;
+
+  /* ---- 범용 확인/알림 모달 (iframe에서 네이티브 confirm/alert가 막혀 있어서 직접 구현) ---- */
+  function showConfirm(message){
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirmModal');
+      const yesBtn = document.getElementById('confirmModalYes');
+      const noBtn = document.getElementById('confirmModalNo');
+      document.getElementById('confirmModalText').textContent = message;
+      noBtn.style.display = 'block';
+      modal.style.display = 'flex';
+      const cleanup = (result) => {
+        modal.style.display = 'none';
+        yesBtn.onclick = null;
+        noBtn.onclick = null;
+        resolve(result);
+      };
+      yesBtn.onclick = () => cleanup(true);
+      noBtn.onclick = () => cleanup(false);
+    });
+  }
+  function showAlert(message){
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirmModal');
+      const yesBtn = document.getElementById('confirmModalYes');
+      const noBtn = document.getElementById('confirmModalNo');
+      document.getElementById('confirmModalText').textContent = message;
+      noBtn.style.display = 'none';
+      modal.style.display = 'flex';
+      yesBtn.onclick = () => {
+        modal.style.display = 'none';
+        yesBtn.onclick = null;
+        resolve();
+      };
+    });
+  }
+
+  // 요약(요청/요청일/요청자) + 사유 입력을 받는 승인요청 모달. 취소 시 null 반환.
+  function openApprovalRequestModal(targetLabel){
+    return new Promise(resolve => {
+      const modal = document.getElementById('approvalRequestModal');
+      const confirmBtn = document.getElementById('arConfirmBtn');
+      const cancelBtn = document.getElementById('arCancelBtn');
+      const msgEl = document.getElementById('arMsg');
+      document.getElementById('arSummaryTarget').textContent = targetLabel;
+      document.getElementById('arSummaryDate').textContent = new Date().toLocaleDateString('ko-KR');
+      document.getElementById('arSummaryUser').textContent = currentUserId || '알 수 없음';
+      document.getElementById('arReason').value = '';
+      msgEl.className = 'msg';
+      modal.style.display = 'flex';
+
+      const cleanup = (reason) => {
+        modal.style.display = 'none';
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+        resolve(reason);
+      };
+      confirmBtn.onclick = () => {
+        const reason = document.getElementById('arReason').value.trim();
+        if(!reason){
+          msgEl.className = 'msg error';
+          msgEl.textContent = '요청 사유를 입력해 주세요.';
+          return;
+        }
+        cleanup(reason);
+      };
+      cancelBtn.onclick = () => cleanup(null);
+    });
+  }
+
+  function completeLogin(id, account){
+    currentUserId = id;
+    currentUserRole = account.role || 'employee';
+    document.getElementById('profileName').textContent = account.name || id;
+    document.getElementById('profileId').textContent = id;
+    document.getElementById('profileEmail').textContent = account.email || '';
+    document.getElementById('profileRoleTag').textContent = account.role === 'admin' ? '관리자' : '';
+    document.getElementById('adminQuickItem').style.display = account.role === 'admin' ? 'block' : 'none';
+    document.getElementById('authLayout').style.display = 'none';
+    document.getElementById('dashboardView').style.display = 'block';
+  }
+
+  document.getElementById('otpShowSecret').onclick = () => {
+    const box = document.getElementById('otpSecretBox');
+    if(box.style.display === 'none'){
+      box.textContent = '인증 앱(Google Authenticator 등)에서 "수동 입력"으로 이 키를 등록하세요: ' + pendingAccount.totpSecret;
+      box.style.display = 'block';
+    } else {
+      box.style.display = 'none';
+    }
+  };
+
+  document.getElementById('otpAppConfirmBtn').onclick = async () => {
+    const entered = document.getElementById('otpAppInput').value.trim();
+    const msgEl = document.getElementById('otpMsgApp');
+    if(!entered){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '인증 앱에 뜬 코드를 입력해 주세요.';
+      return;
+    }
+    const ok = await verifyTotp(pendingAccount.totpSecret, entered);
+    if(ok){
+      const id = pendingLoginId;
+      const account = pendingAccount;
+      closeOtpModal();
+      completeLogin(id, account);
+    } else {
+      msgEl.className = 'msg error';
+      msgEl.textContent = '코드가 올바르지 않아요. 앱의 코드는 30초마다 바뀌니 최신 코드로 다시 시도해 주세요.';
+    }
+  };
+
+  document.getElementById('otpSmsConfirmBtn').onclick = () => {
+    const entered = document.getElementById('otpSmsInput').value.trim();
+    const msgEl = document.getElementById('otpMsgSms');
+    if(entered === smsCode){
+      const id = pendingLoginId;
+      const account = pendingAccount;
+      closeOtpModal();
+      completeLogin(id, account);
+    } else {
+      msgEl.className = 'msg error';
+      msgEl.textContent = '인증코드가 올바르지 않아요. 다시 확인해 주세요.';
+    }
+  };
+
+  document.getElementById('otpResend').onclick = sendSmsCode;
+
+  document.getElementById('otpCancel').onclick = closeOtpModal;
+
+  document.getElementById('otpAppInput').addEventListener('keydown', e=>{
+    if(e.key === 'Enter') document.getElementById('otpAppConfirmBtn').click();
+  });
+  document.getElementById('otpSmsInput').addEventListener('keydown', e=>{
+    if(e.key === 'Enter') document.getElementById('otpSmsConfirmBtn').click();
+  });
+
+  document.getElementById('logoutBtn').onclick = () => {
+    currentUserId = null;
+    currentUserRole = null;
+    document.getElementById('dashboardView').style.display = 'none';
+    document.getElementById('authLayout').style.display = 'flex';
+  };
+
+  /* ---- Admin: employee account management ---- */
+
+  async function getDeptMap(){
+    const map = {};
+    try{
+      const listResult = await window.storage.list('dept:');
+      const keys = listResult ? listResult.keys : [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        const data = JSON.parse(rec.value);
+        map[key.replace('dept:', '')] = data.name;
+      }
+    }catch(e){ /* ignore */ }
+    return map;
+  }
+
+  let empSearchState={from:'',to:'',name:'',status:''};
+  async function getBranchMap(){const bs=await fetchBranches();return Object.fromEntries(bs.map(b=>[b.id,b.data.branchName]));}
+  async function getDeptMap(){const ds=[];const lr=await window.storage.list('dept:').catch(()=>({keys:[]}));for(const k of(lr.keys||[])){const r=await window.storage.get(k).catch(()=>null);if(r){const d=JSON.parse(r.value);ds.push([k.replace('dept:',''),d.name]);}}return Object.fromEntries(ds);}
+  async function renderEmployeeList(){
+    const body=document.getElementById('employeeList'); if(!body)return; body.innerHTML='<tr><td colspan="11" class="employeeList-empty">불러오는 중...</td></tr>';
+    const lr=await window.storage.list('account:').catch(()=>({keys:[]})), all=[],branchMap=await getBranchMap(),deptMap=await getDeptMap();
+    for(const k of(lr.keys||[])){const r=await window.storage.get(k).catch(()=>null);if(!r)continue;const d=JSON.parse(r.value);if(d.empNo)all.push({id:k.replace('account:',''),data:d});}
+    const statusOf=d=>d.resignDate?'퇴사':(d.employmentStatus||'재직');
+    document.getElementById('empStatAll').textContent=all.length;document.getElementById('empStatActive').textContent=all.filter(x=>statusOf(x.data)==='재직').length;document.getElementById('empStatLeave').textContent=all.filter(x=>statusOf(x.data)==='휴직').length;document.getElementById('empStatResigned').textContent=all.filter(x=>statusOf(x.data)==='퇴사').length;
+    const rows=all.filter(x=>{const d=x.data,st=statusOf(d),date=d.hireDate||d.firstHireDate||'';return(!empSearchState.name||(d.name||'').includes(empSearchState.name))&&(!empSearchState.from||date>=empSearchState.from)&&(!empSearchState.to||date<=empSearchState.to)&&(!empSearchState.status||st===empSearchState.status);});
+    if(!rows.length){body.innerHTML='<tr><td colspan="11" class="employeeList-empty">조건에 맞는 직원이 없어요.</td></tr>';return;}
+    body.innerHTML=rows.map(({id,data:d})=>{const st=statusOf(d);return '<tr><td><input type="checkbox" class="empListCheck" value="'+esc(id)+'"></td><td>'+esc(d.empNo)+'</td><td><button class="linkBtn empProfileBtn" data-id="'+esc(id)+'">'+esc(d.name||id)+'</button></td><td>'+esc(branchMap[d.branchId]||'-')+'</td><td>'+esc(deptMap[d.deptId]||'-')+'</td><td>'+esc(d.rank||'-')+'</td><td>'+esc(d.position||'-')+'</td><td>'+esc(d.hireDate||d.firstHireDate||'-')+'</td><td>'+(d.verified?'인증':'미인증')+'</td><td>'+st+(st==='재직'?' <button class="tinyBtn empResignBtn" data-id="'+id+'" data-name="'+esc(d.name||id)+'">퇴사</button>':'')+'</td><td><button class="tinyBtn empEditBtn" data-id="'+id+'">수정</button> <button class="tinyBtn empResetBtn" data-id="'+id+'" data-name="'+esc(d.name||id)+'">비번재설정</button> <button class="tinyBtn empOtpViewBtn" data-id="'+id+'" data-name="'+esc(d.name||id)+'">OTP보기</button> <button class="tinyBtn empOtpResetBtn" data-id="'+id+'" data-name="'+esc(d.name||id)+'">OTP초기화</button></td></tr>';}).join('');
+    body.querySelectorAll('.empProfileBtn').forEach(b=>b.onclick=()=>openEmployeeProfile(b.dataset.id));body.querySelectorAll('.empEditBtn').forEach(b=>b.onclick=()=>openEmployeeProfile(b.dataset.id,'기본정보'));body.querySelectorAll('.empResignBtn').forEach(b=>b.onclick=()=>openResignModal(b.dataset.id,b.dataset.name));body.querySelectorAll('.empResetBtn').forEach(b=>b.onclick=()=>resetEmployeePw(b.dataset.id,b.dataset.name));body.querySelectorAll('.empOtpResetBtn').forEach(b=>b.onclick=()=>resetEmployeeOtp(b.dataset.id,b.dataset.name));body.querySelectorAll('.empOtpViewBtn').forEach(b=>b.onclick=()=>viewEmployeeOtp(b.dataset.id,b.dataset.name));
+  }
+  /* ---- 조직도: 사업장별 조직 관리 ---- */
+  let currentDeptId = null;
+  async function fetchDepts(){
+    const out=[]; const lr=await window.storage.list('dept:').catch(()=>({keys:[]}));
+    for(const key of(lr.keys||[])){const r=await window.storage.get(key).catch(()=>null);if(r){const d=JSON.parse(r.value);out.push({id:key.replace('dept:',''),name:d.name,data:d});}}
+    return out;
+  }
+  async function populateDeptBranch(){const bs=await fetchBranches();const el=document.getElementById('deptBranch');el.innerHTML=bs.length?bs.map(b=>'<option value="'+b.id+'">'+esc(b.data.branchName)+'</option>').join(''):'<option value="">사업장을 먼저 등록해 주세요</option>';await populateDeptSelects();renderDeptTree();}
+  async function populateDeptSelects(){const branchId=document.getElementById('deptBranch').value;const ds=(await fetchDepts()).filter(x=>x.data.branchId===branchId&&x.id!==currentDeptId);document.getElementById('deptParent').innerHTML='<option value="">없음 (최상위 조직)</option>'+ds.map(d=>'<option value="'+d.id+'">'+esc(d.name)+'</option>').join('');const accts=(await getRecords('account:')).filter(x=>!x.data.resignDate&&(!branchId||x.data.branchId===branchId));const leader=document.getElementById('deptLeader');if(leader)leader.innerHTML='<option value="">미지정</option>'+accts.map(x=>'<option value="'+x.id+'">'+esc((x.data.name||x.id)+' · '+(x.data.position||x.data.rank||'직원'))+'</option>').join('');}
+  function resetDeptFields(){currentDeptId=null;document.getElementById('deptName').value='';document.getElementById('deptType').value='본부';document.getElementById('deptParent').value='';document.getElementById('deptStatus').value='사용중';}
+  document.getElementById('deptBranch').onchange=async()=>{resetDeptFields();await populateDeptSelects();renderDeptTree();renderPermissionPickers();};
+  document.getElementById('deptNewBtn').onclick=()=>{resetDeptFields();populateDeptSelects();};
+  /* ---- 조직·인사 마스터: 모든 화면의 선택값 원천 ---- */
+  const MASTER_DEFAULTS={
+    '조직유형':['본부','사업부','실','부','팀','센터','파트'],
+    '직급':['사원','주임','대리','과장','차장','부장','이사','상무','전무','부사장','대표'],
+    '직책':['팀원','파트장','팀장','실장','센터장','본부장','사업부장','대표이사'],
+    '직무':['급여담당','채용담당','인사운영','근태담당','회계담당','마케팅담당'],
+    '고용형태':['정규직','계약직','인턴','일용직']
+  };
+  let currentMasterType='조직유형',masterEditId=null;
+  async function ensureMasterDefaults(){for(const [type,names] of Object.entries(MASTER_DEFAULTS)){const rows=(await getRecords('hrMaster:')).filter(x=>x.data.type===type);if(!rows.length){for(let i=0;i<names.length;i++){const id='m'+type.replace(/[^가-힣A-Za-z0-9]/g,'')+(i+1);await window.storage.set('hrMaster:'+id,JSON.stringify({type,code:type.slice(0,2).toUpperCase()+'_'+String(i+1).padStart(2,'0'),name:names[i],order:i+1,status:'사용'}));}}}await refreshMasterLinkedControls();}
+  async function masterRows(type){return (await getRecords('hrMaster:')).filter(x=>x.data.type===type).sort((a,b)=>(+a.data.order||999)-(+b.data.order||999));}
+  function masterUsage(type){return {'조직유형':'조직도 > 조직 등록','직급':'직원등록 · 인사프로필','직책':'직원등록 · 조직 책임자','직무':'직원정보 · 권한정책','고용형태':'인사프로필'}[type]||'-';}
+  async function renderMasterList(){const rows=await masterRows(currentMasterType),b=document.getElementById('masterList');if(!b)return;document.getElementById('masterTypeView').value=currentMasterType;document.getElementById('masterListTitle').textContent=currentMasterType+' 목록';b.innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.data.code||'')+'</td><td><b>'+esc(x.data.name)+'</b></td><td>'+esc(String(x.data.order||''))+'</td><td>'+esc(x.data.status||'사용')+'</td><td>'+esc(masterUsage(currentMasterType))+'</td><td><button class="tinyBtn masterEdit" data-id="'+x.id+'">수정</button> <button class="tinyBtn masterStop" data-id="'+x.id+'">'+(x.data.status==='사용'?'사용중지':'사용')+'</button></td></tr>').join(''):'<tr><td colspan="6" class="employeeList-empty">등록된 항목이 없어요.</td></tr>';b.querySelectorAll('.masterEdit').forEach(btn=>btn.onclick=()=>{const x=rows.find(r=>r.id===btn.dataset.id);masterEditId=x.id;document.getElementById('masterCode').value=x.data.code||'';document.getElementById('masterName').value=x.data.name||'';document.getElementById('masterOrder').value=x.data.order||1;document.getElementById('masterStatus').value=x.data.status||'사용';});b.querySelectorAll('.masterStop').forEach(btn=>btn.onclick=async()=>{const x=rows.find(r=>r.id===btn.dataset.id);x.data.status=x.data.status==='사용'?'사용중지':'사용';await window.storage.set('hrMaster:'+x.id,JSON.stringify(x.data));await renderMasterList();await refreshMasterLinkedControls();});}
+  function resetMaster(){masterEditId=null;document.getElementById('masterCode').value='';document.getElementById('masterName').value='';document.getElementById('masterOrder').value='1';document.getElementById('masterStatus').value='사용';}
+  document.querySelectorAll('.masterTab').forEach(b=>b.onclick=()=>{currentMasterType=b.dataset.master;document.querySelectorAll('.masterTab').forEach(x=>x.classList.toggle('active',x===b));resetMaster();renderMasterList();});
+  document.getElementById('masterResetBtn').onclick=resetMaster;
+  document.getElementById('masterSaveBtn').onclick=async()=>{const name=document.getElementById('masterName').value.trim();if(!name){showAlert('명칭을 입력해 주세요.');return;}const id=masterEditId||('m'+Date.now()),d={type:currentMasterType,code:document.getElementById('masterCode').value.trim()||('AUTO_'+Date.now()),name,order:+document.getElementById('masterOrder').value||1,status:document.getElementById('masterStatus').value};await window.storage.set('hrMaster:'+id,JSON.stringify(d));logActivity(masterEditId?'수정':'등록',name,currentMasterType+' 마스터');resetMaster();await renderMasterList();await refreshMasterLinkedControls();};
+  async function refreshMasterLinkedControls(){const types=(await masterRows('조직유형')).filter(x=>x.data.status==='사용');const sel=document.getElementById('deptType');if(sel){const old=sel.value;sel.innerHTML=types.map(x=>'<option value="'+x.id+'">'+esc(x.data.name)+'</option>').join('')||'<option value="">조직유형을 등록해 주세요</option>';if(types.some(x=>x.id===old))sel.value=old;}await renderPermissionPickers();}
+  document.getElementById('deptSaveBtn').onclick=async()=>{const branchId=document.getElementById('deptBranch').value,name=document.getElementById('deptName').value.trim(),msg=document.getElementById('deptMsg');if(!branchId||!name){msg.className='msg error';msg.textContent='사업장과 조직명을 입력해 주세요.';return;}const id=currentDeptId||('d'+Date.now());const data={branchId,name,typeId:document.getElementById('deptType').value,type:(document.getElementById('deptType').selectedOptions[0]||{}).textContent||'',parentId:document.getElementById('deptParent').value,leaderId:document.getElementById('deptLeader').value,status:document.getElementById('deptStatus').value};await window.storage.set('dept:'+id,JSON.stringify(data));logActivity(currentDeptId?'수정':'등록',name,'조직');msg.className='msg success';msg.textContent='저장됐어요.';resetDeptFields();await populateDeptSelects();renderDeptTree();};
+  async function deptEmployeeCounts(){const m={};const lr=await window.storage.list('account:').catch(()=>({keys:[]}));for(const k of(lr.keys||[])){const r=await window.storage.get(k).catch(()=>null);if(r){const d=JSON.parse(r.value);if(d.deptId)m[d.deptId]=(m[d.deptId]||0)+1;}}return m;}
+  async function renderDeptTree(){const body=document.getElementById('deptTree'),branchId=document.getElementById('deptBranch').value;const ds=(await fetchDepts()).filter(x=>x.data.branchId===branchId),counts=await deptEmployeeCounts(),map=Object.fromEntries(ds.map(x=>[x.id,x])),accts=await getRecords('account:'),am=Object.fromEntries(accts.map(x=>[x.id,x.data]));if(!ds.length){body.innerHTML='<tr><td colspan="8" class="employeeList-empty">등록된 조직이 없어요.</td></tr>';return;}const depth=x=>{let n=0,p=x.data.parentId;while(p&&map[p]){n++;p=map[p].data.parentId;}return n};ds.sort((a,b)=>{const path=x=>{let z=[x.name],p=x.data.parentId;while(p&&map[p]){z.unshift(map[p].name);p=map[p].data.parentId;}return z.join('/');};return path(a).localeCompare(path(b),'ko');});body.innerHTML=ds.map(x=>{const dep=depth(x),parent=x.data.parentId&&map[x.data.parentId]?map[x.data.parentId].name:'없음',ld=x.data.leaderId&&am[x.data.leaderId]?am[x.data.leaderId]:null;return '<tr><td><input type="checkbox" class="deptCheck" value="'+x.id+'"></td><td><div class="orgNameCell" style="padding-left:'+(dep*22)+'px">'+(dep?'<span class="orgDepth"></span>':'')+'<button class="linkBtn deptEdit" data-id="'+x.id+'">'+esc(x.name)+'</button><span class="orgBadge">'+esc(x.data.type||'-')+'</span></div></td><td>'+esc(x.data.type||'-')+'</td><td>'+esc(parent)+'</td><td>'+esc(ld?((ld.name||x.data.leaderId)+' · '+(ld.position||ld.rank||'')):'미지정')+'</td><td>'+String(counts[x.id]||0)+'명</td><td>'+esc(x.data.status||'사용중')+'</td><td><button class="tinyBtn deptDelete" data-id="'+x.id+'">삭제</button></td></tr>'}).join('');body.querySelectorAll('.deptEdit').forEach(b=>b.onclick=async()=>{const x=map[b.dataset.id];currentDeptId=x.id;document.getElementById('deptName').value=x.data.name||'';document.getElementById('deptType').value=x.data.typeId||document.getElementById('deptType').value;document.getElementById('deptStatus').value=x.data.status||'사용중';await populateDeptSelects();document.getElementById('deptParent').value=x.data.parentId||'';document.getElementById('deptLeader').value=x.data.leaderId||'';});body.querySelectorAll('.deptDelete').forEach(b=>b.onclick=()=>deleteDepts([b.dataset.id]));}
+  async function deleteDepts(ids){const ds=await fetchDepts(),counts=await deptEmployeeCounts();for(const id of ids){const x=ds.find(d=>d.id===id);if(!x)continue;const hasChild=ds.some(d=>d.data.parentId===id);if(hasChild||(counts[id]||0)>0){await showAlert('"'+x.name+'" 조직은 하위조직 또는 소속 직원이 있어 삭제할 수 없어요.');continue;}if(await showConfirm('"'+x.name+'" 조직을 삭제할까요?')){await window.storage.delete('dept:'+id);logActivity('삭제',x.name,'조직');}}renderDeptTree();populateDeptSelects();renderPermissionPickers();}
+  document.getElementById('deptCheckAll').onchange=e=>document.querySelectorAll('.deptCheck').forEach(c=>c.checked=e.target.checked);
+  document.getElementById('deptSelectDeleteBtn').onclick=()=>deleteDepts(Array.from(document.querySelectorAll('.deptCheck:checked')).map(c=>c.value));
+
+  const dashHome = document.getElementById('dashHome');
+  const adminView = document.getElementById('adminView');
+  const approvalCenterView = document.getElementById('approvalCenterView');
+  const permissionRequestView = document.getElementById('permissionRequestView');
+
+  function showDashSection(name){
+    dashHome.style.display = name === 'home' ? 'block' : 'none';
+    adminView.style.display = name === 'admin' ? 'block' : 'none';
+    approvalCenterView.style.display = name === 'approval' ? 'block' : 'none';
+    permissionRequestView.style.display = name === 'permissionRequest' ? 'block' : 'none';
+  }
+
+  document.getElementById('adminCardBtn').onclick = (e) => {
+    e.preventDefault();
+    showDashSection('admin');
+    renderBranchList();
+  };
+  document.getElementById('adminBackBtn').onclick = () => showDashSection('home');
+
+  document.getElementById('navApprovalLink').onclick = (e) => {
+    e.preventDefault();
+    showDashSection('approval');
+    renderApprovalList();
+  };
+  document.getElementById('approvalBackBtn').onclick = () => showDashSection('home');
+  document.getElementById('navPermissionRequestLink').onclick=(e)=>{e.preventDefault();showDashSection('permissionRequest');};
+  document.getElementById('permissionRequestBackBtn').onclick=()=>showDashSection('home');
+  document.getElementById('userPermSubmitBtn').onclick=async()=>{const reason=document.getElementById('userPermReason').value.trim();if(!reason){showAlert('신청사유를 입력해 주세요.');return;}const id='pr'+Date.now(),data={group:document.getElementById('userPermGroup').value,scope:document.getElementById('userPermScope').value,from:document.getElementById('userPermFrom').value,to:document.getElementById('userPermTo').value,reason,status:'승인대기',requestedAt:new Date().toISOString(),requester:'demo'};await window.storage.set('permissionRequest:'+id,JSON.stringify(data));logActivity('신청',data.group,'권한신청 / '+data.scope);showAlert('권한신청이 접수됐어요. 신청자격 검증 후 결재가 진행됩니다.');document.getElementById('userPermReason').value='';};
+
+  const adminNavItems = document.querySelectorAll('.adminNav-item');
+  adminNavItems.forEach(btn => {
+    btn.onclick = () => {
+      const target = btn.dataset.section;
+      adminNavItems.forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.adminSection').forEach(sec => {
+        sec.style.display = (sec.id === 'adminSection-' + target) ? 'block' : 'none';
+      });
+      if(target==='permissionPolicy')renderPermissionPolicies(); if(target==='permissionGroups')renderPermissionGroups(); if(target==='permissionRequests')renderPermissionRequestsAdmin();
+      if(target === 'employees'){
+        renderEmployeeList();
+        if(!document.querySelectorAll('#empRegBody tr').length) addEmpRegRow();
+      }
+      if(target === 'company') renderBranchList();
+      if(target === 'tax') loadSettings();
+      if(target === 'org'){ resetDeptFields(); populateDeptBranch(); }
+      if(target === 'seal') populateAssetBranches('seal');
+      if(target === 'bank') populateAssetBranches('bank');
+      if(target === 'hrstandards') renderHrStandards();
+      if(target === 'shareholders'){ populateShareholderBranchSelect(); }
+      if(target === 'activity') renderActivityList();
+    };
+  });
+
+  /* ---- 회사정보: 사업장(본점/지점) 관리 ---- */
+  let currentBranchId = null;
+
+  function toggleCorpNumberField(){
+    const isCorp = document.getElementById('coBizKind').value === '법인';
+    document.getElementById('coCorpNumberField').style.display = isCorp ? 'block' : 'none';
+  }
+  document.getElementById('coBizKind').onchange = toggleCorpNumberField;
+  attachAutoFormat(document.getElementById('coBizNumber'), FMT_BIZNO);
+  attachAutoFormat(document.getElementById('coCorpNumber'), FMT_CORPNO);
+  toggleCorpNumberField();
+  function toggleCompanyStatusFields(){const v=document.getElementById('coStatus').value;document.getElementById('coPauseStartField').style.display=v==='휴업'?'block':'none';document.getElementById('coPauseEndField').style.display=v==='휴업'?'block':'none';document.getElementById('coCloseDateField').style.display=v==='폐업'?'block':'none';}
+  document.getElementById('coStatus').onchange=toggleCompanyStatusFields; toggleCompanyStatusFields();
+
+  function resetCompanyFields(){
+    currentBranchId = null;
+    ['coBranchName','coBizName','coBizNumber','coCeoName','coOpenDate','coAddress','coBizType','coBizItem','coCorpNumber']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('coBizKind').value = '법인';
+    document.getElementById('coIsHQ').checked = false;
+    document.getElementById('coStatus').value='영업중';document.getElementById('coPauseStart').value='';document.getElementById('coPauseEnd').value='';document.getElementById('coCloseDate').value='';
+    toggleCorpNumberField();toggleCompanyStatusFields();
+  }
+
+  function clearCompanyForm(){
+    resetCompanyFields();
+    document.getElementById('companyMsg').className = 'msg';
+  }
+
+  function loadBranchIntoForm(id, data){
+    currentBranchId = id;
+    document.getElementById('coBranchName').value = data.branchName || '';
+    document.getElementById('coBizName').value = data.bizName || '';
+    document.getElementById('coBizNumber').value = data.bizNumber || '';
+    document.getElementById('coCeoName').value = data.ceoName || '';
+    document.getElementById('coBizKind').value = data.bizKind || '법인';
+    document.getElementById('coCorpNumber').value = data.corpNumber || '';
+    document.getElementById('coOpenDate').value = data.openDate || '';
+    document.getElementById('coAddress').value = data.address || '';
+    document.getElementById('coBizType').value = data.bizType || '';
+    document.getElementById('coBizItem').value = data.bizItem || '';
+    document.getElementById('coIsHQ').checked = !!data.isHQ;document.getElementById('coStatus').value=data.status||'영업중';document.getElementById('coPauseStart').value=data.pauseStart||'';document.getElementById('coPauseEnd').value=data.pauseEnd||'';document.getElementById('coCloseDate').value=data.closeDate||'';
+    document.getElementById('companyMsg').className = 'msg';
+    toggleCorpNumberField();toggleCompanyStatusFields();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  async function renderBranchList(){
+    const listEl = document.getElementById('branchList');
+    listEl.innerHTML = '<li class="employeeList-empty">불러오는 중...</li>';
+    try{
+      const listResult = await window.storage.list('branch:');
+      const keys = listResult ? listResult.keys : [];
+      if(!keys.length){
+        listEl.innerHTML = '<li class="employeeList-empty">등록된 사업장이 없어요.</li>';
+        return;
+      }
+      const rows = [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        const data = JSON.parse(rec.value);
+        const id = key.replace('branch:', '');
+        rows.push({ id, data });
+      }
+      listEl.innerHTML = rows.map(({id, data}) =>
+        '<li class="branchRow" data-id="' + id + '">' +
+        '<div style="cursor:pointer;" class="branchRow-main" data-id="' + id + '">' +
+        '<span class="employeeList-name">' + (data.branchName || '(이름 없음)') + '</span>' +
+        (data.isHQ ? '<span class="employeeList-role">대표 사업장</span>' : '') + '<span class="employeeList-role">'+(data.status||'영업중')+'</span>' +
+        '<span class="employeeList-meta">' + (data.bizName || '') + (data.address ? ' · ' + data.address : '') + '</span>' +
+        '</div>' +
+        '<button class="branchRow-delete" data-id="' + id + '" data-name="' + (data.branchName || '') + '">삭제 요청</button>' +
+        '</li>'
+      ).join('');
+      listEl.querySelectorAll('.branchRow-main').forEach(row => {
+        row.onclick = async () => {
+          const rec = await window.storage.get('branch:' + row.dataset.id);
+          loadBranchIntoForm(row.dataset.id, JSON.parse(rec.value));
+        };
+      });
+      listEl.querySelectorAll('.branchRow-delete').forEach(btn => {
+        btn.onclick = async (e) => {
+          e.stopPropagation();
+          await requestBranchDeletion(btn.dataset.id, btn.dataset.name);
+        };
+      });
+    }catch(e){
+      listEl.innerHTML = '<li class="employeeList-empty">목록을 불러오지 못했어요.</li>';
+    }
+  }
+
+  async function requestBranchDeletion(branchId, branchName){
+    const reason = await openApprovalRequestModal((branchName || '이 사업장') + ' 정보 삭제');
+    if(reason === null) return;
+    let snapshot = null;
+    try{
+      const rec = await window.storage.get('branch:' + branchId);
+      snapshot = JSON.parse(rec.value);
+    }catch(e){ /* 스냅샷 실패해도 요청은 진행 */ }
+    const reqId = 'r' + Date.now();
+    await window.storage.set('approval:' + reqId, JSON.stringify({
+      type: 'branch_delete',
+      targetId: branchId,
+      targetLabel: branchName || '(이름 없음)',
+      requestedBy: currentUserId || '알 수 없음',
+      requestedAt: new Date().toISOString(),
+      reason,
+      snapshot,
+      status: 'pending'
+    }));
+    logActivity('삭제요청', branchName || '(이름 없음)', '사업장 정보 삭제 상신');
+    await showAlert('"' + (branchName || '이 사업장') + '" 삭제 승인 요청을 보냈어요.\n대표자(L1) 승인 후 실제로 삭제돼요.');
+  }
+
+  /* ---- 권한 승인센터 ---- */
+  function formatRequestedAt(iso){
+    try{
+      const d = new Date(iso);
+      return d.getMonth()+1 + '.' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+    }catch(e){ return ''; }
+  }
+
+  async function renderApprovalList(){
+    const listEl = document.getElementById('approvalList');
+    listEl.innerHTML = '<li class="employeeList-empty">불러오는 중...</li>';
+    try{
+      const listResult = await window.storage.list('approval:');
+      const keys = listResult ? listResult.keys : [];
+      const pending = [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        const data = JSON.parse(rec.value);
+        if(data.status === 'pending') pending.push({ id: key.replace('approval:', ''), data });
+      }
+      if(!pending.length){
+        listEl.innerHTML = '<li class="employeeList-empty">대기 중인 요청이 없어요.</li>';
+        return;
+      }
+      const typeLabel = { branch_delete: '사업장 정보 삭제', branch_create: '사업장 신규 등록', branch_update: '사업장 정보 수정' };
+      listEl.innerHTML = pending.map(({id, data}) =>
+        '<li class="approvalRow approvalRow-clickable" data-id="' + id + '">' +
+        '<span>' +
+        '<span class="employeeList-name">' + (typeLabel[data.type] || data.type) + '</span>' +
+        '<span class="employeeList-meta">대상: ' + data.targetLabel + ' · 요청자: ' + data.requestedBy + ' · ' + formatRequestedAt(data.requestedAt) + '</span>' +
+        '</span>' +
+        '<span class="approvalRow-btn">상세보기</span>' +
+        '</li>'
+      ).join('');
+      listEl.querySelectorAll('.approvalRow-clickable').forEach(row => {
+        row.onclick = () => openApprovalDetail(row.dataset.id);
+      });
+    }catch(e){
+      listEl.innerHTML = '<li class="employeeList-empty">목록을 불러오지 못했어요.</li>';
+    }
+  }
+
+  const branchFieldLabels = {
+    branchName: '사업장 구분명', bizName: '상호(사업자명)', bizNumber: '사업자등록번호',
+    ceoName: '대표자명', bizKind: '사업자 구분', corpNumber: '법인등록번호', openDate: '개업연월일',
+    address: '사업장 소재지', bizType: '업태', bizItem: '종목', isHQ: '대표 사업장'
+  };
+
+  async function openApprovalDetail(reqId){
+    const rec = await window.storage.get('approval:' + reqId).catch(() => null);
+    if(!rec) return;
+    const data = JSON.parse(rec.value);
+    const typeLabel = { branch_delete: '사업장 정보 삭제', branch_create: '사업장 신규 등록', branch_update: '사업장 정보 수정' };
+
+    let docHtml = '';
+    const payload = data.snapshot || data.payload;
+    if(payload){
+      docHtml = '<div class="approvalDoc">' + Object.keys(branchFieldLabels).map(key => {
+        if(!(key in payload)) return '';
+        let val = payload[key];
+        if(key === 'isHQ') val = val ? '예' : '아니오';
+        if(!val) return '';
+        return '<div><span class="approvalDoc-label">' + branchFieldLabels[key] + '</span><span>' + val + '</span></div>';
+      }).join('') + '</div>';
+    }
+
+    document.getElementById('adModalBody').innerHTML =
+      '<div class="approvalSummary">' +
+      '<div><span class="approvalSummary-label">요청</span><span>' + (typeLabel[data.type] || data.type) + '</span></div>' +
+      '<div><span class="approvalSummary-label">대상</span><span>' + data.targetLabel + '</span></div>' +
+      '<div><span class="approvalSummary-label">요청자</span><span>' + data.requestedBy + '</span></div>' +
+      '<div><span class="approvalSummary-label">요청일</span><span>' + formatRequestedAt(data.requestedAt) + '</span></div>' +
+      '<div><span class="approvalSummary-label">요청사유</span><span>' + (data.reason || '-') + '</span></div>' +
+      '</div>' +
+      (docHtml ? '<h3 style="font-size:13px; margin:18px 0 8px;">' + (data.type === 'branch_delete' ? '삭제될 내용' : '등록/수정될 내용') + '</h3>' + docHtml : '');
+
+    document.getElementById('approvalDetailModal').dataset.reqId = reqId;
+    document.getElementById('approvalDetailModal').style.display = 'flex';
+  }
+
+  async function resolveApproval(reqId, approve){
+    try{
+      const rec = await window.storage.get('approval:' + reqId);
+      const data = JSON.parse(rec.value);
+      if(approve && data.type === 'branch_delete'){
+        await window.storage.delete('branch:' + data.targetId).catch(() => null);
+      }
+      if(approve && (data.type === 'branch_create' || data.type === 'branch_update')){
+        if(data.payload.isHQ){
+          const listResult = await window.storage.list('branch:');
+          const keys = listResult ? listResult.keys : [];
+          for(const key of keys){
+            if(key === 'branch:' + data.targetId) continue;
+            const other = await window.storage.get(key).catch(() => null);
+            if(!other) continue;
+            const otherData = JSON.parse(other.value);
+            if(otherData.isHQ){
+              otherData.isHQ = false;
+              await window.storage.set(key, JSON.stringify(otherData));
+            }
+          }
+        }
+        await window.storage.set('branch:' + data.targetId, JSON.stringify(data.payload));
+      }
+      data.status = approve ? 'approved' : 'rejected';
+      await window.storage.set('approval:' + reqId, JSON.stringify(data));
+      logActivity(approve ? '승인' : '거부', data.targetLabel, (data.type === 'branch_delete' ? '사업장 삭제' : data.type));
+      renderApprovalList();
+      renderBranchList();
+    }catch(e){
+      showAlert('처리 중 문제가 생겼어요. 다시 시도해 주세요.');
+    }
+  }
+
+  document.getElementById('adApproveBtn').onclick = () => {
+    const reqId = document.getElementById('approvalDetailModal').dataset.reqId;
+    document.getElementById('approvalDetailModal').style.display = 'none';
+    resolveApproval(reqId, true);
+  };
+  document.getElementById('adRejectBtn').onclick = () => {
+    const reqId = document.getElementById('approvalDetailModal').dataset.reqId;
+    document.getElementById('approvalDetailModal').style.display = 'none';
+    resolveApproval(reqId, false);
+  };
+  document.getElementById('adCloseBtn').onclick = () => {
+    document.getElementById('approvalDetailModal').style.display = 'none';
+  };
+
+  document.getElementById('coNewBtn').onclick = clearCompanyForm;
+
+  document.getElementById('coSaveBtn').onclick = async () => {
+    const branchName = document.getElementById('coBranchName').value.trim();
+    const bizName = document.getElementById('coBizName').value.trim();
+    const bizNumber = document.getElementById('coBizNumber').value.trim();
+    const msgEl = document.getElementById('companyMsg');
+    if(!branchName || !bizName || !bizNumber){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '사업장 구분명, 상호, 사업자등록번호는 꼭 입력해 주세요.';
+      return;
+    }
+    const isHQ = document.getElementById('coIsHQ').checked;
+    const btn = document.getElementById('coSaveBtn');
+    btn.disabled = true;
+    btn.textContent = '저장 중...';
+    try{
+      const id = currentBranchId || ('b' + Date.now());
+
+      // 사업자등록번호 중복 체크 (자기 자신은 제외)
+      const listResult = await window.storage.list('branch:');
+      const keys = listResult ? listResult.keys : [];
+      for(const key of keys){
+        if(key === 'branch:' + id) continue;
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        const other = JSON.parse(rec.value);
+        if(other.bizNumber === bizNumber){
+          btn.disabled = false;
+          btn.textContent = '저장';
+          const goEdit = await showConfirm('동일한 사업자번호가 존재합니다.\n사업자정보 수정화면으로 이동하시겠습니까?');
+          if(goEdit){
+            loadBranchIntoForm(key.replace('branch:', ''), other);
+          }
+          return;
+        }
+      }
+
+      const data = {
+        branchName, bizName, bizNumber,
+        ceoName: document.getElementById('coCeoName').value.trim(),
+        bizKind: document.getElementById('coBizKind').value,
+        corpNumber: document.getElementById('coCorpNumber').value.trim(),
+        openDate: document.getElementById('coOpenDate').value,
+        address: document.getElementById('coAddress').value.trim(),
+        bizType: document.getElementById('coBizType').value.trim(),
+        bizItem: document.getElementById('coBizItem').value.trim(),
+        status:document.getElementById('coStatus').value,pauseStart:document.getElementById('coPauseStart').value,pauseEnd:document.getElementById('coPauseEnd').value,closeDate:document.getElementById('coCloseDate').value,
+        isHQ
+      };
+      // 대표 사업장은 하나만 존재해야 하므로, 체크했다면 다른 사업장의 대표 표시를 해제
+      if(isHQ){
+        for(const key of keys){
+          if(key === 'branch:' + id) continue;
+          const rec = await window.storage.get(key).catch(() => null);
+          if(!rec) continue;
+          const other = JSON.parse(rec.value);
+          if(other.isHQ){
+            other.isHQ = false;
+            await window.storage.set(key, JSON.stringify(other));
+          }
+        }
+      }
+      await window.storage.set('branch:' + id, JSON.stringify(data));
+      logActivity(currentBranchId ? '수정' : '등록', branchName, '사업장 정보');
+      msgEl.className = 'msg success';
+      msgEl.textContent = '"' + branchName + '" 저장됐어요. 이어서 다른 사업장을 입력하실 수 있어요.';
+      resetCompanyFields();
+      renderBranchList();
+    }catch(e){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '저장 중 문제가 생겼어요. 다시 시도해 주세요.';
+    }
+    btn.disabled = false;
+    btn.textContent = '저장';
+  };
+
+  /* ---- 설정: 세금계산서 담당자 이메일 ---- */
+  async function fetchBranches(){
+    const branches = [];
+    try{
+      const listResult = await window.storage.list('branch:');
+      const keys = listResult ? listResult.keys : [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        branches.push({ id: key.replace('branch:', ''), data: JSON.parse(rec.value) });
+      }
+    }catch(e){ /* ignore */ }
+    return branches;
+  }
+
+  async function populateTaxBranchSelect(){
+    const branches = await fetchBranches();
+    const select = document.getElementById('taxBranchSelect');
+    if(!branches.length){
+      select.innerHTML = '<option value="">사업장을 먼저 등록해 주세요</option>';
+      return;
+    }
+    select.innerHTML = branches.map(b => '<option value="' + b.id + '">' + b.data.branchName + (b.data.isHQ ? ' (대표)' : '') + '</option>').join('');
+    loadTaxContactForBranch(select.value);
+  }
+
+  async function loadTaxContactForBranch(branchId){
+    document.getElementById('taxEmail1').value = '';
+    document.getElementById('taxEmail2').value = '';
+    document.getElementById('taxPhone').value = '';
+    if(!branchId) return;
+    try{
+      const rec = await window.storage.get('branch:' + branchId);
+      const data = JSON.parse(rec.value);
+      const tc = data.taxContact || {};
+      document.getElementById('taxEmail1').value = tc.email1 || '';
+      document.getElementById('taxEmail2').value = tc.email2 || '';
+      document.getElementById('taxPhone').value = tc.phone || '';
+    }catch(e){ /* ignore */ }
+  }
+
+  document.getElementById('taxBranchSelect').onchange = (e) => loadTaxContactForBranch(e.target.value);
+  attachAutoFormat(document.getElementById('taxPhone'), FMT_PHONE);
+
+  async function loadSettings(){
+    await populateTaxBranchSelect();
+  }
+
+  document.getElementById('settingsSaveBtn').onclick = async () => {
+    const branchId = document.getElementById('taxBranchSelect').value;
+    const msgEl = document.getElementById('settingsMsg');
+    if(!branchId){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '사업장을 먼저 등록하고 선택해 주세요.';
+      return;
+    }
+    try{
+      const rec = await window.storage.get('branch:' + branchId);
+      const data = JSON.parse(rec.value);
+      data.taxContact = {
+        email1: document.getElementById('taxEmail1').value.trim(),
+        email2: document.getElementById('taxEmail2').value.trim(),
+        phone: document.getElementById('taxPhone').value.trim()
+      };
+      await window.storage.set('branch:' + branchId, JSON.stringify(data));
+      logActivity('수정', data.branchName || branchId, '세금계산서 담당자 정보');
+      msgEl.className = 'msg success';
+      msgEl.textContent = '저장됐어요.';
+    }catch(e){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '저장 중 문제가 생겼어요. 다시 시도해 주세요.';
+    }
+  };
+
+  /* ---- 주주명부: 사업장별 관리 + 변경이력 ---- */
+  let currentShareholderId = null;
+  function esc(v){ return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function num(v){ return parseFloat(String(v||'').replace(/,/g,'')) || 0; }
+  function won(v){ return Math.round(v).toLocaleString('ko-KR') + '원'; }
+  function maskPersonalNo(v){ if(!v) return '-'; const d=v.replace(/\D/g,''); return d.length>=7 ? d.slice(0,6)+'-'+d.slice(6,7)+'******' : v; }
+  function toggleShareholderType(){
+    const corp = document.getElementById('shType').value === '법인';
+    document.getElementById('shPersonalNoField').style.display = corp ? 'none' : 'block';
+    document.getElementById('shCorpNoField').style.display = corp ? 'block' : 'none';
+    document.getElementById('shNameLabel').textContent = corp ? '법인명' : '주주명';
+    document.getElementById('shAddressLabel').textContent = corp ? '법인 소재지' : '주소';
+  }
+  document.getElementById('shType').onchange = toggleShareholderType;
+  attachAutoFormat(document.getElementById('shPersonalNo'), FMT_SSN);
+  attachAutoFormat(document.getElementById('shCorpNo'), FMT_CORPNO);
+  attachAutoFormat(document.getElementById('shPhone'), FMT_PHONE);
+
+  async function populateShareholderBranchSelect(){
+    const branches = await fetchBranches();
+    const sel = document.getElementById('shBranchSelect');
+    const prev = sel.value;
+    if(!branches.length){ sel.innerHTML='<option value="">사업장을 먼저 등록해 주세요</option>'; renderShareholderList(); renderShareholderHistory(); return; }
+    sel.innerHTML = branches.map(b=>'<option value="'+b.id+'">'+esc(b.data.branchName)+(b.data.isHQ?' (대표)':'')+'</option>').join('');
+    if(branches.some(b=>b.id===prev)) sel.value=prev;
+    resetShareholderFields(); renderShareholderList(); renderShareholderHistory();
+  }
+  document.getElementById('shBranchSelect').onchange = () => { resetShareholderFields(); renderShareholderList(); renderShareholderHistory(); };
+
+  function resetShareholderFields(){
+    currentShareholderId = null;
+    ['shName','shPersonalNo','shCorpNo','shAddress','shPhone','shEmail','shShares','shPricePerShare','shRatio','shAcquireDate','shNote'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('shType').value='개인'; document.getElementById('shShareClass').value='보통주'; document.getElementById('shChangeReason').value='신규취득';
+    document.getElementById('shMsg').className='msg'; toggleShareholderType();
+  }
+  document.getElementById('shNewBtn').onclick = resetShareholderFields;
+
+  async function logShareholderHistory(branchId, action, shareholderName, detail, before, after){
+    const id='h'+Date.now()+Math.random().toString(36).slice(2,6);
+    await window.storage.set('shareholderHistory:'+id, JSON.stringify({at:new Date().toISOString(),actor:currentUserId||'-',branchId,action,shareholderName,detail,before:before||null,after:after||null}));
+  }
+
+  document.getElementById('shSaveBtn').onclick = async () => {
+    const branchId=document.getElementById('shBranchSelect').value, name=document.getElementById('shName').value.trim(), ratio=document.getElementById('shRatio').value.trim(), msgEl=document.getElementById('shMsg');
+    if(!branchId){ msgEl.className='msg error'; msgEl.textContent='사업장을 먼저 선택해 주세요.'; return; }
+    if(!name || !ratio){ msgEl.className='msg error'; msgEl.textContent='주주명(법인명)과 지분율은 꼭 입력해 주세요.'; return; }
+    const id=currentShareholderId||('sh'+Date.now()); let before=null;
+    if(currentShareholderId){ const r=await window.storage.get('shareholder:'+id).catch(()=>null); if(r) before=JSON.parse(r.value); }
+    const data={branchId,type:document.getElementById('shType').value,name,personalNo:document.getElementById('shPersonalNo').value.trim(),corpNo:document.getElementById('shCorpNo').value.trim(),address:document.getElementById('shAddress').value.trim(),phone:document.getElementById('shPhone').value.trim(),email:document.getElementById('shEmail').value.trim(),shareClass:document.getElementById('shShareClass').value,shares:document.getElementById('shShares').value.trim(),pricePerShare:document.getElementById('shPricePerShare').value.trim(),ratio,acquireDate:document.getElementById('shAcquireDate').value,changeReason:document.getElementById('shChangeReason').value,note:document.getElementById('shNote').value.trim()};
+    await window.storage.set('shareholder:'+id,JSON.stringify(data));
+    const action=currentShareholderId?'수정':'등록'; const detail=(data.changeReason||'')+' · '+(data.shares||0)+'주 · 지분율 '+ratio+'%';
+    await logShareholderHistory(branchId,action,name,detail,before,data); logActivity(action,name,'주주명부 · '+detail);
+    msgEl.className='msg success'; msgEl.textContent='"'+name+'" 주주정보가 저장됐어요.'; resetShareholderFields(); renderShareholderList(); renderShareholderHistory();
+  };
+
+  async function getShareholdersForBranch(branchId){
+    const out=[]; if(!branchId) return out; const lr=await window.storage.list('shareholder:').catch(()=>({keys:[]}));
+    for(const key of (lr.keys||[])){ const r=await window.storage.get(key).catch(()=>null); if(!r) continue; const d=JSON.parse(r.value); if(d.branchId===branchId) out.push({id:key.replace('shareholder:',''),data:d}); }
+    return out;
+  }
+  async function renderShareholderList(){
+    const body=document.getElementById('shareholderList'), branchId=document.getElementById('shBranchSelect').value; body.innerHTML='<tr><td colspan="9" class="employeeList-empty">불러오는 중...</td></tr>';
+    const rows=await getShareholdersForBranch(branchId); let totalRatio=0,totalShares=0,totalValue=0;
+    rows.forEach(({data})=>{ totalRatio+=num(data.ratio); totalShares+=num(data.shares); totalValue+=num(data.shares)*num(data.pricePerShare); });
+    document.getElementById('shCount').textContent=rows.length+'명'; document.getElementById('shTotalShares').textContent=totalShares.toLocaleString('ko-KR')+'주'; document.getElementById('shTotalRatio').textContent=totalRatio.toFixed(1)+'%'+(totalRatio>100?' ⚠':''); document.getElementById('shTotalValue').textContent=won(totalValue);
+    if(!rows.length){ body.innerHTML='<tr><td colspan="9" class="employeeList-empty">이 사업장에 등록된 주주가 없어요.</td></tr>'; return; }
+    body.innerHTML=rows.map(({id,data})=>'<tr class="shRow" data-id="'+id+'"><td>'+esc(data.type||'개인')+'</td><td><b>'+esc(data.name)+'</b><br><span style="font-size:10px;color:#8C8676">'+esc(data.type==='법인'?(data.corpNo||'-'):maskPersonalNo(data.personalNo))+'</span></td><td>'+esc(data.shareClass||'-')+'</td><td>'+num(data.shares).toLocaleString('ko-KR')+'</td><td>'+won(num(data.pricePerShare))+'</td><td>'+won(num(data.shares)*num(data.pricePerShare))+'</td><td>'+esc(data.ratio)+'%</td><td>'+esc(data.acquireDate||'-')+'</td><td><button class="tinyBtn shEditBtn" data-id="'+id+'">수정</button> <button class="tinyBtn shDeleteBtn" data-id="'+id+'" data-name="'+esc(data.name)+'">삭제</button></td></tr>').join('');
+    body.querySelectorAll('.shEditBtn').forEach(b=>b.onclick=async()=>{ const r=await window.storage.get('shareholder:'+b.dataset.id); const d=JSON.parse(r.value); currentShareholderId=b.dataset.id; ['Name','PersonalNo','CorpNo','Address','Phone','Email','Shares','PricePerShare','Ratio','AcquireDate','Note'].forEach(k=>document.getElementById('sh'+k).value=d[k.charAt(0).toLowerCase()+k.slice(1)]||''); document.getElementById('shType').value=d.type||'개인'; document.getElementById('shShareClass').value=d.shareClass||'보통주'; document.getElementById('shChangeReason').value=d.changeReason||'기타'; toggleShareholderType(); window.scrollTo({top:0,behavior:'smooth'}); });
+    body.querySelectorAll('.shDeleteBtn').forEach(b=>b.onclick=async()=>{ if(!await showConfirm('"'+b.dataset.name+'" 주주 정보를 삭제할까요?')) return; const r=await window.storage.get('shareholder:'+b.dataset.id).catch(()=>null); const old=r?JSON.parse(r.value):null; await window.storage.delete('shareholder:'+b.dataset.id); await logShareholderHistory(branchId,'삭제',b.dataset.name,'주주정보 삭제',old,null); logActivity('삭제',b.dataset.name,'주주명부'); renderShareholderList(); renderShareholderHistory(); });
+  }
+  async function renderShareholderHistory(){
+    const body=document.getElementById('shHistoryList'),branchId=document.getElementById('shBranchSelect').value,rows=[]; const lr=await window.storage.list('shareholderHistory:').catch(()=>({keys:[]}));
+    for(const key of (lr.keys||[])){const r=await window.storage.get(key).catch(()=>null);if(!r)continue;const d=JSON.parse(r.value);if(d.branchId===branchId)rows.push(d);} rows.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+    body.innerHTML=rows.length?rows.map(d=>'<tr><td>'+esc(new Date(d.at).toLocaleString('ko-KR'))+'</td><td>'+esc(d.actor)+'</td><td>'+esc(d.action)+'</td><td>'+esc(d.shareholderName)+'</td><td>'+esc(d.detail||'')+'</td></tr>').join(''):'<tr><td colspan="5" class="employeeList-empty">이 사업장의 변경이력이 없어요.</td></tr>';
+  }
+  document.querySelectorAll('.shTab').forEach(tab=>tab.onclick=()=>{document.querySelectorAll('.shTab').forEach(t=>t.classList.toggle('active',t===tab));const h=tab.dataset.shTab==='history';document.getElementById('shCurrentPanel').style.display=h?'none':'block';document.getElementById('shHistoryPanel').style.display=h?'block':'none';if(h)renderShareholderHistory();});
+  document.getElementById('shExcelBtn').onclick=async()=>{const branchId=document.getElementById('shBranchSelect').value, rows=await getShareholdersForBranch(branchId);exportRowsToExcel('mouff_주주명부.xlsx',['구분','주주명/법인명','주민등록번호','법인등록번호','주소/소재지','연락처','이메일','주식종류','주식수','1주금액','보유금액','지분율','취득일','변동사유','비고'],rows.map(({data:d})=>[d.type,d.name,d.personalNo,d.corpNo,d.address,d.phone,d.email,d.shareClass,d.shares,d.pricePerShare,num(d.shares)*num(d.pricePerShare),d.ratio,d.acquireDate,d.changeReason,d.note]));};
+  document.getElementById('shHistoryExcelBtn').onclick=async()=>{const branchId=document.getElementById('shBranchSelect').value,rows=[];const lr=await window.storage.list('shareholderHistory:').catch(()=>({keys:[]}));for(const key of(lr.keys||[])){const r=await window.storage.get(key).catch(()=>null);if(r){const d=JSON.parse(r.value);if(d.branchId===branchId)rows.push(d);}}exportRowsToExcel('mouff_주주명부_변경이력.xlsx',['일시','사용자','행위','주주','상세'],rows.map(d=>[d.at,d.actor,d.action,d.shareholderName,d.detail]));};
+
+  /* ---- 직원등록: 표 기반 다건 입력 ---- */
+
+  /* ---- 사업장 기반 인감·계좌 ---- */
+  async function populateAssetBranches(kind){const bs=await fetchBranches(),el=document.getElementById(kind==='seal'?'sealBranch':'bankBranch');el.innerHTML=bs.length?bs.map(b=>'<option value="'+b.id+'">'+esc(b.data.branchName)+'</option>').join(''):'<option value="">사업장을 먼저 등록해 주세요</option>';if(kind==='seal')renderSeals();else renderBanks();}
+  let sealEditId=null,sealImageData='';document.getElementById('sealBranch').onchange=renderSeals;document.getElementById('sealImage').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{sealImageData=rd.result;document.getElementById('sealPreview').innerHTML='<img src="'+sealImageData+'">';};rd.readAsDataURL(f);};
+  function resetSeal(){sealEditId=null;sealImageData='';['sealName','sealNote','sealDate'].forEach(id=>document.getElementById(id).value='');document.getElementById('sealType').value='법인인감';document.getElementById('sealStatus').value='사용중';document.getElementById('sealImage').value='';document.getElementById('sealPreview').textContent='이미지 미리보기';}
+  document.getElementById('sealNewBtn').onclick=resetSeal;document.getElementById('sealSaveBtn').onclick=async()=>{const branchId=document.getElementById('sealBranch').value,name=document.getElementById('sealName').value.trim(),rows=await getRecords('seal:');if(!branchId||!name){showAlert('사업장과 인감명을 입력해 주세요.');return;}if(!sealEditId&&rows.filter(x=>x.data.branchId===branchId).length>=5){showAlert('사업장당 최대 5개까지 등록할 수 있어요.');return;}const id=sealEditId||('s'+Date.now()),old=rows.find(x=>x.id===id);const data={branchId,type:document.getElementById('sealType').value,name,status:document.getElementById('sealStatus').value,date:document.getElementById('sealDate').value,note:document.getElementById('sealNote').value.trim(),image:sealImageData||(old&&old.data.image)||''};await window.storage.set('seal:'+id,JSON.stringify(data));logActivity(sealEditId?'수정':'등록',name,'인감·직인');resetSeal();renderSeals();};
+  async function getRecords(prefix){const out=[],lr=await window.storage.list(prefix).catch(()=>({keys:[]}));for(const k of(lr.keys||[])){const r=await window.storage.get(k).catch(()=>null);if(r)out.push({id:k.replace(prefix,''),data:JSON.parse(r.value)});}return out;}
+  async function renderSeals(){const branchId=document.getElementById('sealBranch').value,rows=(await getRecords('seal:')).filter(x=>x.data.branchId===branchId),body=document.getElementById('sealList');document.getElementById('sealCount').textContent=rows.length+' / 5';body.innerHTML=rows.length?rows.map(x=>'<tr><td>'+(x.data.image?'<img class="sealThumb" src="'+x.data.image+'">':'-')+'</td><td>'+esc(x.data.type)+'</td><td>'+esc(x.data.name)+'</td><td>'+esc(x.data.status)+'</td><td>'+esc(x.data.date||'-')+'</td><td>'+esc(x.data.note||'')+'</td><td><button class="tinyBtn sealEdit" data-id="'+x.id+'">수정</button> <button class="tinyBtn sealDel" data-id="'+x.id+'">삭제</button></td></tr>').join(''):'<tr><td colspan="7" class="employeeList-empty">등록된 인감·직인이 없어요.</td></tr>';body.querySelectorAll('.sealEdit').forEach(b=>b.onclick=()=>{const x=rows.find(r=>r.id===b.dataset.id);sealEditId=x.id;sealImageData=x.data.image||'';document.getElementById('sealType').value=x.data.type;document.getElementById('sealName').value=x.data.name;document.getElementById('sealStatus').value=x.data.status;document.getElementById('sealDate').value=x.data.date||'';document.getElementById('sealNote').value=x.data.note||'';document.getElementById('sealPreview').innerHTML=x.data.image?'<img src="'+x.data.image+'">':'이미지 미리보기';});body.querySelectorAll('.sealDel').forEach(b=>b.onclick=async()=>{if(await showConfirm('삭제할까요?')){const x=rows.find(r=>r.id===b.dataset.id);await window.storage.delete('seal:'+b.dataset.id);logActivity('삭제',x.data.name,'인감·직인');renderSeals();}});}
+  let bankEditId=null;document.getElementById('bankBranch').onchange=renderBanks;document.getElementById('bankStatus').onchange=()=>document.getElementById('bankCloseDateField').style.display=document.getElementById('bankStatus').value==='해지'?'block':'none';function resetBank(){bankEditId=null;['bankName','bankAccount','bankHolder','bankOpenDate','bankCloseDate','bankNote'].forEach(id=>document.getElementById(id).value='');document.getElementById('bankPurpose').value='운영계좌';document.getElementById('bankCurrency').value='KRW';document.getElementById('bankStatus').value='사용중';document.getElementById('bankPrimary').checked=false;document.getElementById('bankCloseDateField').style.display='none';}document.getElementById('bankNewBtn').onclick=resetBank;document.getElementById('bankSaveBtn').onclick=async()=>{const branchId=document.getElementById('bankBranch').value,name=document.getElementById('bankName').value.trim(),account=document.getElementById('bankAccount').value.trim();if(!branchId||!name||!account){showAlert('사업장, 은행명, 계좌번호를 입력해 주세요.');return;}const id=bankEditId||('bk'+Date.now()),data={branchId,bank:name,account,holder:document.getElementById('bankHolder').value.trim(),purpose:document.getElementById('bankPurpose').value,currency:document.getElementById('bankCurrency').value,status:document.getElementById('bankStatus').value,openDate:document.getElementById('bankOpenDate').value,closeDate:document.getElementById('bankCloseDate').value,primary:document.getElementById('bankPrimary').checked,note:document.getElementById('bankNote').value.trim()};await window.storage.set('bank:'+id,JSON.stringify(data));logActivity(bankEditId?'수정':'등록',name+' '+account,'계좌정보');resetBank();renderBanks();};
+  async function renderBanks(){const branchId=document.getElementById('bankBranch').value,rows=(await getRecords('bank:')).filter(x=>x.data.branchId===branchId),body=document.getElementById('bankList');body.innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.data.bank)+'</td><td>'+esc(x.data.account)+'</td><td>'+esc(x.data.holder||'-')+'</td><td>'+esc(x.data.purpose)+'</td><td>'+esc(x.data.currency)+'</td><td>'+(x.data.primary?'Y':'')+'</td><td>'+esc(x.data.status)+'</td><td><button class="tinyBtn bankEdit" data-id="'+x.id+'">수정</button> <button class="tinyBtn bankDel" data-id="'+x.id+'">삭제</button></td></tr>').join(''):'<tr><td colspan="8" class="employeeList-empty">등록된 계좌가 없어요.</td></tr>';body.querySelectorAll('.bankEdit').forEach(b=>b.onclick=()=>{const x=rows.find(r=>r.id===b.dataset.id);bankEditId=x.id;document.getElementById('bankName').value=x.data.bank;document.getElementById('bankAccount').value=x.data.account;document.getElementById('bankHolder').value=x.data.holder||'';document.getElementById('bankPurpose').value=x.data.purpose;document.getElementById('bankCurrency').value=x.data.currency;document.getElementById('bankStatus').value=x.data.status;document.getElementById('bankOpenDate').value=x.data.openDate||'';document.getElementById('bankCloseDate').value=x.data.closeDate||'';document.getElementById('bankPrimary').checked=!!x.data.primary;document.getElementById('bankNote').value=x.data.note||'';document.getElementById('bankCloseDateField').style.display=x.data.status==='해지'?'block':'none';});body.querySelectorAll('.bankDel').forEach(b=>b.onclick=async()=>{if(await showConfirm('계좌 정보를 삭제할까요?')){await window.storage.delete('bank:'+b.dataset.id);logActivity('삭제','계좌','계좌정보');renderBanks();}});}
+  document.getElementById('bankExcelBtn').onclick=async()=>{const bid=document.getElementById('bankBranch').value,rows=(await getRecords('bank:')).filter(x=>x.data.branchId===bid);exportRowsToExcel('mouff_계좌정보.xlsx',['은행','계좌번호','예금주','용도','통화','주계좌','상태','개설일','해지일','비고'],rows.map(x=>[x.data.bank,x.data.account,x.data.holder,x.data.purpose,x.data.currency,x.data.primary?'Y':'N',x.data.status,x.data.openDate,x.data.closeDate,x.data.note]));};
+
+  /* ---- 인사기준 DB: 유형별 전용 입력폼 ---- */
+  let hrStdEditId=null;document.getElementById('hrStdYear').value=new Date().getFullYear();document.getElementById('hrStdFrom').value=new Date().getFullYear()+'-01-01';
+  const stdField=(id,label,type='number',ph='')=>'<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+type+'" '+(type==='number'?'step="0.001"':'')+' placeholder="'+ph+'"></div>';
+  function renderHrStdDynamic(data={}){const cat=document.getElementById('hrStdCategory').value,c=document.getElementById('hrStdDynamic');let html='';
+    if(cat==='4대보험 기준') html='<h3>4대보험 요율 입력</h3><div class="stdHint">요율은 직접 입력해 저장해요. 업종별로 달라지는 산재·고용 관련 값은 사업장/업종코드와 함께 별도 필드로 보관할 수 있어요.</div><div class="stdGrid">'+stdField('stdPension','국민연금 요율(%)')+stdField('stdHealth','건강보험 요율(%)')+stdField('stdCare','장기요양 요율(%)')+stdField('stdEmploymentWorker','고용보험 근로자 요율(%)')+stdField('stdEmploymentEmployer','고용보험 사업주 기본 요율(%)')+stdField('stdEmploymentExtra','고용보험 사업주 추가요율(%)')+stdField('stdIndustrial','산재보험 요율(%)')+stdField('stdIndustryCode','업종코드','text','사업장 업종코드')+stdField('stdPensionMin','국민연금 기준소득월액 하한')+stdField('stdPensionMax','국민연금 기준소득월액 상한')+stdField('stdHealthMin','건강보험 보수월액 하한')+stdField('stdHealthMax','건강보험 보수월액 상한')+'</div>';
+    else if(cat==='연차·휴가 기준') html='<h3>연차·휴가 산정 기준</h3><div class="stdHint">입사일 기준 또는 회계연도 기준을 선택하고 발생·가산·정산 규칙을 저장해요.</div><div class="stdGrid"><div class="field"><label>연차 산정방식</label><select id="stdLeaveMethod"><option>입사일 기준</option><option>회계연도 기준</option></select></div>'+stdField('stdFiscalStart','회계연도 시작일','text','01-01')+stdField('stdLeaveBase','1년 이상 기본연차(일)')+stdField('stdAttendanceRate','출근율 기준(%)')+stdField('stdUnderYear','1년 미만 개근 발생(일/월)')+stdField('stdAddStart','가산 최초 시점(년)')+stdField('stdAddCycle','가산 주기(년)')+stdField('stdAddDays','가산 일수')+stdField('stdLeaveMax','최대 연차일수')+'<div class="field"><label>중도입사자 처리</label><select id="stdMidHire"><option>비례 산정</option><option>입사일 기준 별도관리</option><option>회사정책 직접설정</option></select></div><div class="field"><label>퇴직 시 정산</label><select id="stdResignLeave"><option>입사일 기준 비교 정산</option><option>회사정책 직접설정</option></select></div><div class="field"><label>미사용 연차 처리</label><select id="stdUnusedLeave"><option>수당정산</option><option>이월</option><option>사용촉진 적용</option><option>회사정책 직접설정</option></select></div></div>';
+    else if(cat==='급여항목 관리') html='<h3>급여항목 마스터</h3><div class="stdHint">급여대장에 사용할 지급·공제 컬럼을 정의해요. 저장된 항목은 적용시점부터 급여 계산/명세서 컬럼으로 사용할 수 있어요.</div><div class="payItemForm"><div class="stdGrid">'+stdField('stdPayCode','항목코드','text','PAY001 / DED001')+stdField('stdPayName','급여항목명','text','기본급, 식대, 직책수당')+'<div class="field"><label>지급·공제 구분</label><select id="stdPayKind"><option>지급</option><option>공제</option></select></div><div class="field"><label>과세구분</label><select id="stdTaxKind"><option>과세</option><option>비과세</option><option>해당없음</option></select></div><div class="field"><label>계산방식</label><select id="stdCalcType"><option>고정금액</option><option>직원별 금액</option><option>직접입력</option><option>근태 자동계산</option><option>보험 자동계산</option><option>세금 자동계산</option><option>산식계산</option></select></div>'+stdField('stdTaxLimit','비과세 한도(원)')+'<div class="field"><label>한도 단위</label><select id="stdLimitUnit"><option>월</option><option>연</option><option>건</option><option>해당없음</option></select></div><div class="field"><label>법정기준 연결</label><select id="stdLegalLink"><option>없음</option><option>식대 비과세</option><option>자가운전보조금</option><option>보육수당</option><option>4대보험</option><option>소득세</option><option>기타</option></select></div><div class="field"><label>근태 연동</label><select id="stdAttendanceLink"><option>연동 안함</option><option>연장근로</option><option>야간근로</option><option>휴일근로</option><option>근태 직접연동</option></select></div><div class="field"><label>명세서 표시</label><select id="stdPayslip"><option>표시</option><option>숨김</option></select></div>'+stdField('stdSort','정렬순서')+'<div class="field"><label>사용상태</label><select id="stdPayUse"><option>사용</option><option>사용중지</option></select></div></div></div>';
+    else if(cat==='급여·세무 기준') html='<h3>급여·세무 공통 기준</h3><div class="stdHint">법정 비과세 한도나 세무 계산에 필요한 공통 기준값을 항목별로 저장해요.</div><div class="stdGrid">'+stdField('stdMealLimit','식대 비과세 한도(월/원)')+stdField('stdCarLimit','자가운전보조금 비과세 한도(월/원)')+stdField('stdChildLimit','보육 관련 비과세 한도(월/원)')+stdField('stdLocalTaxRate','지방소득세 계산비율(%)')+'<div class="field full"><label>기타 세무 기준/메모</label><input id="stdTaxMemo" type="text" placeholder="추가 기준 또는 계산 메모"></div></div>';
+    else if(cat==='직급·직책 체계') html='<h3>직급·직책·직무 마스터</h3><div class="stdHint">회사마다 다른 직급/직책/직무를 직접 만들어요. 삭제 대신 사용중지를 권장하며 기본 Level은 계정 발급 시 제안값일 뿐 실제 업무권한을 자동 부여하지 않아요.</div><div class="stdGrid"><div class="field"><label>구분</label><select id="stdHrMasterType"><option>직급</option><option>직책</option><option>직무</option><option>고용형태</option></select></div>'+stdField('stdHrMasterCode','코드','text','예: RANK01')+stdField('stdHrMasterName','명칭','text','예: 사원, 팀장, 급여담당')+stdField('stdHrMasterOrder','표시/승진 순서')+'<div class="field"><label>기본 Level</label><select id="stdHrMasterLevel"><option>L1</option><option>L2</option><option>L3</option><option>L4</option><option>L5</option><option>L6</option></select></div><div class="field"><label>사용상태</label><select id="stdHrMasterUse"><option>사용</option><option>사용중지</option></select></div></div>';
+    else html='<h3>근무 기준</h3><div class="stdHint">근태 계산에 사용할 회사의 기본 근무기준을 저장해요.</div><div class="stdGrid">'+stdField('stdWeeklyHours','주 소정근로시간')+stdField('stdDailyHours','1일 소정근로시간')+stdField('stdWorkDays','주 근무일수')+stdField('stdBreakMin','기본 휴게시간(분)')+'</div>';
+    c.innerHTML=html;Object.entries(data.fields||{}).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v;});
+  }
+  function collectStdFields(){const o={};document.querySelectorAll('#hrStdDynamic input,#hrStdDynamic select,#hrStdDynamic textarea').forEach(el=>o[el.id]=el.value);return o;}
+  function setHrStdCategory(cat){document.getElementById('hrStdCategory').value=cat;document.querySelectorAll('.hrStdTab').forEach(b=>b.classList.toggle('active',b.dataset.cat===cat));renderHrStdDynamic();if(!document.getElementById('hrStdName').value)document.getElementById('hrStdName').value=document.getElementById('hrStdYear').value+'년 '+cat;}
+  document.querySelectorAll('.hrStdTab').forEach(b=>b.onclick=()=>setHrStdCategory(b.dataset.cat));document.getElementById('hrStdCategory').onchange=()=>setHrStdCategory(document.getElementById('hrStdCategory').value);document.getElementById('hrStdYear').onchange=()=>{if(!hrStdEditId){document.getElementById('hrStdFrom').value=document.getElementById('hrStdYear').value+'-01-01';document.getElementById('hrStdName').value=document.getElementById('hrStdYear').value+'년 '+document.getElementById('hrStdCategory').value;}};
+  function resetHrStd(){hrStdEditId=null;document.getElementById('hrStdName').value=document.getElementById('hrStdYear').value+'년 '+document.getElementById('hrStdCategory').value;document.getElementById('hrStdVersion').value='v1';document.getElementById('hrStdStatus').value='초안';document.getElementById('hrStdTo').value='';renderHrStdDynamic();}
+  document.getElementById('hrStdNewBtn').onclick=resetHrStd;document.getElementById('hrStdSaveBtn').onclick=async()=>{const name=document.getElementById('hrStdName').value.trim();if(!name){showAlert('기준명을 입력해 주세요.');return;}const id=hrStdEditId||('hs'+Date.now()),data={year:+document.getElementById('hrStdYear').value,category:document.getElementById('hrStdCategory').value,name,source:document.getElementById('hrStdSource').value,from:document.getElementById('hrStdFrom').value,to:document.getElementById('hrStdTo').value,version:document.getElementById('hrStdVersion').value.trim()||'v1',status:document.getElementById('hrStdStatus').value,fields:collectStdFields()};await window.storage.set('hrStandard:'+id,JSON.stringify(data));logActivity(hrStdEditId?'수정':'등록',name,'인사기준 '+data.year);resetHrStd();renderHrStandards();};
+  async function renderHrStandards(){const rows=await getRecords('hrStandard:'),body=document.getElementById('hrStdList');body.innerHTML=rows.length?rows.sort((a,b)=>b.data.year-a.data.year).map(x=>'<tr><td>'+x.data.year+'</td><td>'+esc(x.data.category)+'</td><td>'+esc(x.data.name)+'</td><td>'+esc(x.data.source)+'</td><td>'+esc(x.data.from||'-')+' ~ '+esc(x.data.to||'')+'</td><td>'+esc(x.data.version)+'</td><td>'+esc(x.data.status)+'</td><td><button class="tinyBtn hrStdEdit" data-id="'+x.id+'">수정</button> <button class="tinyBtn hrStdDel" data-id="'+x.id+'">삭제</button></td></tr>').join(''):'<tr><td colspan="8" class="employeeList-empty">등록된 기준이 없어요.</td></tr>';body.querySelectorAll('.hrStdEdit').forEach(b=>b.onclick=()=>{const x=rows.find(r=>r.id===b.dataset.id),d=x.data;hrStdEditId=x.id;document.getElementById('hrStdYear').value=d.year;document.getElementById('hrStdCategory').value=d.category;document.querySelectorAll('.hrStdTab').forEach(z=>z.classList.toggle('active',z.dataset.cat===d.category));document.getElementById('hrStdName').value=d.name;document.getElementById('hrStdSource').value=d.source;document.getElementById('hrStdFrom').value=d.from||'';document.getElementById('hrStdTo').value=d.to||'';document.getElementById('hrStdVersion').value=d.version;document.getElementById('hrStdStatus').value=d.status;renderHrStdDynamic(d);});body.querySelectorAll('.hrStdDel').forEach(b=>b.onclick=async()=>{if(await showConfirm('기준을 삭제할까요?')){await window.storage.delete('hrStandard:'+b.dataset.id);renderHrStandards();}});}
+  document.getElementById('hrStdCopyBtn').onclick=async()=>{const year=+document.getElementById('hrStdYear').value,rows=(await getRecords('hrStandard:')).filter(x=>x.data.year===year-1);if(!rows.length){showAlert((year-1)+'년 기준이 없어요.');return;}for(const x of rows){const d={...x.data,year,from:year+'-01-01',to:'',status:'초안',version:'v1',name:(x.data.name||'').replace(String(year-1),String(year))};await window.storage.set('hrStandard:hs'+Date.now()+Math.random(),JSON.stringify(d));}logActivity('복사',year+'년 인사기준','전년도 기준 복사');renderHrStandards();};
+  document.getElementById('hrStdExcelBtn').onclick=async()=>{const rows=await getRecords('hrStandard:');exportRowsToExcel('mouff_인사기준DB.xlsx',['연도','구분','기준명','성격','적용시작일','적용종료일','버전','상태','세부필드'],rows.map(x=>[x.data.year,x.data.category,x.data.name,x.data.source,x.data.from,x.data.to,x.data.version,x.data.status,JSON.stringify(x.data.fields||{})]));};renderHrStdDynamic();resetHrStd();
+
+  /* ---- 직원 인사프로필 ---- */
+  let currentProfileId=null,currentProfileTab='기본정보';const PROFILE_TABS=['기본정보','재직정보','연봉','급여·세무','학력','경력','자격·교육','인사이력','첨부서류','계정정보'];
+  async function openEmployeeProfile(id,tab){currentProfileId=id;currentProfileTab=tab||'기본정보';document.querySelectorAll('.adminSection').forEach(x=>x.style.display='none');document.getElementById('adminSection-employeeProfile').style.display='block';await renderProfile();}
+  document.getElementById('profileBackBtn').onclick=()=>{document.getElementById('adminSection-employeeProfile').style.display='none';document.getElementById('adminSection-employees').style.display='block';document.querySelectorAll('.empMainTab').forEach(x=>x.classList.toggle('active',x.dataset.empTab==='list'));document.getElementById('empRegisterPanel').style.display='none';document.getElementById('empListPanel').style.display='block';renderEmployeeList();};
+  async function renderProfile(){const r=await window.storage.get('account:'+currentProfileId).catch(()=>null);if(!r)return;const d=JSON.parse(r.value),st=d.resignDate?'퇴사':(d.employmentStatus||'재직'),bm=await getBranchMap(),dm=await getDeptMap();document.getElementById('profileName').textContent=(d.name||'직원')+' · '+(d.empNo||'');document.getElementById('profileMeta').textContent=(bm[d.branchId]||'사업장 미배정')+' · '+(dm[d.hqId]||'본부 미배정')+' · '+(dm[d.deptId]||'부서 미배정')+' · '+(d.rank||'-')+' · '+(d.position||'-');document.getElementById('profileStatus').textContent=st;document.getElementById('profileTabs').innerHTML=PROFILE_TABS.map(t=>'<button class="profileTab '+(t===currentProfileTab?'active':'')+'" data-tab="'+t+'">'+t+'</button>').join('');document.querySelectorAll('.profileTab').forEach(b=>b.onclick=()=>{currentProfileTab=b.dataset.tab;renderProfile();});renderProfileContent(d);}
+  function renderProfileContent(d){const c=document.getElementById('profileContent');if(currentProfileTab==='기본정보'){c.innerHTML='<div class="profileGrid"><div class="field"><label>이름</label><input id="pfName" value="'+esc(d.name||'')+'"></div><div class="field"><label>영문명</label><input id="pfEnglish" value="'+esc(d.englishName||'')+'"></div><div class="field"><label>주민등록번호</label><input id="pfSsn" value="'+esc(d.ssn||'')+'"></div><div class="field"><label>전화번호</label><input id="pfPhone" value="'+esc(d.phone||'')+'"></div><div class="field"><label>비상연락처</label><input id="pfEmergency" value="'+esc(d.emergencyPhone||'')+'"></div><div class="field"><label>비상연락처 관계</label><select id="pfEmergencyRel">'+emergencyRelationOptions(d.emergencyRelation)+'</select></div><div class="field"><label>이메일</label><input id="pfEmail" value="'+esc(d.email||'')+'"></div><div class="field full"><label>주소</label><input id="pfAddress" value="'+esc(d.address||'')+'"></div></div><div class="btnRow"><button class="btn" id="pfSaveBasic">저장</button></div>';document.getElementById('pfSaveBasic').onclick=()=>saveProfileFields({name:'pfName',englishName:'pfEnglish',ssn:'pfSsn',phone:'pfPhone',emergencyPhone:'pfEmergency',emergencyRelation:'pfEmergencyRel',email:'pfEmail',address:'pfAddress'});return;}if(currentProfileTab==='재직정보'){c.innerHTML='<div class="profileGrid"><div><b>사원번호</b><p>'+esc(d.empNo||'-')+'</p></div><div><b>최초입사일</b><p>'+esc(d.firstHireDate||'-')+'</p></div><div><b>입사일</b><p>'+esc(d.hireDate||'-')+'</p></div><div><b>고용형태</b><p>'+esc(d.employmentType||'정규직')+'</p></div><div><b>현재 상태</b><p>'+esc(d.resignDate?'퇴사':(d.employmentStatus||'재직'))+'</p></div><div><b>퇴사일</b><p>'+esc(d.resignDate||'-')+'</p></div></div>';return;}if(currentProfileTab==='계정정보'){c.innerHTML='<div class="profileGrid"><div><b>로그인 ID</b><p>'+esc(currentProfileId)+'</p></div><div><b>OTP 상태</b><p>'+(d.verified?'인증':'미인증')+'</p></div><div><b>OTP 비밀키</b><p>현재 프로토타입에서는 직원목록의 OTP보기로 확인 가능</p></div></div>';return;}renderProfileCollection(d,currentProfileTab);}
+  async function saveProfileFields(map){const r=await window.storage.get('account:'+currentProfileId),d=JSON.parse(r.value);for(const [k,id] of Object.entries(map))d[k]=document.getElementById(id).value;await window.storage.set('account:'+currentProfileId,JSON.stringify(d));logActivity('수정',d.name,'인사프로필 '+currentProfileTab);showAlert('저장됐어요.');renderProfile();}
+  function profileSchema(tab){return { '연봉':['적용시작일','적용종료일','계약연봉','기본급','고정수당','식대','기타고정급','변경사유'], '급여·세무':['급여은행','급여계좌번호','예금주','부양가족수','자녀수','4대보험상태','비과세정보','비고'], '학력':['학교구분','학교명','전공','학위','입학일','졸업일','상태'], '경력':['회사명','부서','직급·직책','입사일','퇴사일','담당업무','퇴사사유'], '자격·교육':['구분','명칭','기관','취득·수료일','만료일','자격번호·교육시간'], '인사이력':['일자','구분','변경전','변경후','사유'], '첨부서류':['문서구분','문서명','등록일','비고'] }[tab]||[];}
+  async function renderProfileCollection(d,tab){const key='hrProfile:'+currentProfileId+':'+tab+':',rows=await getRecords(key),fields=profileSchema(tab),c=document.getElementById('profileContent');c.innerHTML='<div class="empRegHead"><h3>'+tab+'</h3><span class="sub">여러 건을 이력으로 누적해요.</span></div><div class="miniForm">'+fields.map((f,i)=>'<div class="field"><label>'+f+'</label><input class="pfColInput" data-field="'+f+'"></div>').join('')+'</div><button class="btn" id="pfColAdd">+ 등록</button><table class="profileList"><thead><tr>'+fields.map(f=>'<th>'+f+'</th>').join('')+'<th>관리</th></tr></thead><tbody>'+(rows.length?rows.map(x=>'<tr>'+fields.map(f=>'<td>'+esc(x.data[f]||'')+'</td>').join('')+'<td><button class="tinyBtn pfColDel" data-id="'+x.id+'">삭제</button></td></tr>').join(''):'<tr><td colspan="'+(fields.length+1)+'">등록된 정보가 없어요.</td></tr>')+'</tbody></table>';document.getElementById('pfColAdd').onclick=async()=>{const data={};document.querySelectorAll('.pfColInput').forEach(i=>data[i.dataset.field]=i.value);await window.storage.set(key+Date.now(),JSON.stringify(data));logActivity('등록',d.name,'인사프로필 '+tab);renderProfile();};document.querySelectorAll('.pfColDel').forEach(b=>b.onclick=async()=>{await window.storage.delete(key+b.dataset.id);logActivity('삭제',d.name,'인사프로필 '+tab);renderProfile();});}
+  let empRegRowSeq = 0;
+
+  async function fetchDepts(){
+    const depts = [];
+    try{
+      const listResult = await window.storage.list('dept:');
+      const keys = listResult ? listResult.keys : [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        const data=JSON.parse(rec.value);depts.push({ id: key.replace('dept:', ''), name: data.name, data });
+      }
+    }catch(e){ /* ignore */ }
+    return depts;
+  }
+
+  const HQ_TYPES=['본부','사업부'];
+  function deptOptionsHtml(depts, selectedId){return '<option value="">미배정</option>'+depts.map(d=>'<option value="'+d.id+'"'+(d.id===selectedId?' selected':'')+'>'+esc(d.name)+'</option>').join('');}
+  function hqOptionsHtml(depts,selectedId,branchId){const hs=depts.filter(d=>d.data.branchId===branchId&&HQ_TYPES.includes(d.data.type)&&d.data.status!=='폐지');return '<option value="">본부 미배정</option>'+hs.map(d=>'<option value="'+d.id+'"'+(d.id===selectedId?' selected':'')+'>'+esc(d.name)+'</option>').join('');}
+  function childDeptOptionsHtml(depts,hqId,selectedId,branchId){const byId=Object.fromEntries(depts.map(d=>[d.id,d]));const under=d=>{let p=d.data.parentId;while(p){if(p===hqId)return true;p=byId[p]&&byId[p].data.parentId;}return false};const list=depts.filter(d=>d.data.branchId===branchId&&!HQ_TYPES.includes(d.data.type)&&d.data.status!=='폐지'&&(!hqId||under(d)));return '<option value="">부서 미배정</option>'+list.map(d=>'<option value="'+d.id+'"'+(d.id===selectedId?' selected':'')+'>'+esc(d.name)+' ('+esc(d.data.type||'부서')+')</option>').join('');}
+
+  const RANK_OPTIONS = ['사원','주임','대리','과장','차장','부장','이사','상무','전무','부사장','대표']; // 기본값. 인사기준의 직급·직책 체계에서 회사별 마스터로 확장
+  const POSITION_OPTIONS = ['없음','팀장','파트장','실장','본부장','대표이사'];
+
+  function rankOptionsHtml(selected){
+    return '<option value="">선택</option>' + RANK_OPTIONS.map(r => '<option' + (r === selected ? ' selected' : '') + '>' + r + '</option>').join('');
+  }
+  function positionOptionsHtml(selected){
+    return POSITION_OPTIONS.map(p => '<option' + (p === selected ? ' selected' : '') + '>' + p + '</option>').join('');
+  }
+
+  function emergencyRelationOptions(selected){
+    selected=selected||'';
+    const opts=['','부','모','배우자','자녀','형제','자매','형제자매','조부','조모','외조부','외조모','친척','보호자','기타'];
+    return opts.map(v=>'<option value="'+v+'" '+(v===selected?'selected':'')+'>'+(v||'선택')+'</option>').join('');
+  }
+
+  async function addEmpRegRow(values){
+    values=values||{};empRegRowSeq++;const depts=await fetchDepts(),branches=await fetchBranches();const tr=document.createElement('tr');tr.dataset.rowId=empRegRowSeq;
+    const branchId=values.branchId||'',hqId=values.hqId||'';
+    tr.innerHTML='<td><input type="checkbox" class="empRegCheck"></td><td class="empRegSeq">'+(document.querySelectorAll('#empRegBody tr').length+1)+'</td><td><input class="ef-name" value="'+esc(values.name||'')+'"></td><td><input class="ef-english" value="'+esc(values.englishName||'')+'"></td><td><input class="ef-ssn" value="'+esc(values.ssn||'')+'"></td><td><input class="ef-phone" value="'+esc(values.phone||'')+'"></td><td><input class="ef-emergency" value="'+esc(values.emergencyPhone||'')+'"></td><td><select class="ef-emergencyRel">'+emergencyRelationOptions(values.emergencyRelation)+'</select></td><td><input class="ef-email" value="'+esc(values.email||'')+'"></td><td><input type="date" class="ef-firstHire" value="'+esc(values.firstHireDate||'')+'"></td><td><input type="date" class="ef-hire" value="'+esc(values.hireDate||'')+'"></td><td><select class="ef-branch"><option value="">미배정</option>'+branches.map(b=>'<option value="'+b.id+'" '+(b.id===branchId?'selected':'')+'>'+esc(b.data.branchName)+'</option>').join('')+'</select></td><td><select class="ef-hq">'+hqOptionsHtml(depts,hqId,branchId)+'</select></td><td><select class="ef-dept">'+childDeptOptionsHtml(depts,hqId,values.deptId,branchId)+'</select></td><td><select class="ef-rank">'+rankOptionsHtml(values.rank)+'</select></td><td><select class="ef-position">'+positionOptionsHtml(values.position)+'</select></td>';
+    document.getElementById('empRegBody').appendChild(tr);attachAutoFormat(tr.querySelector('.ef-ssn'),FMT_SSN);attachAutoFormat(tr.querySelector('.ef-phone'),FMT_PHONE);attachAutoFormat(tr.querySelector('.ef-emergency'),FMT_PHONE);
+    const refresh=()=>{const b=tr.querySelector('.ef-branch').value,h=tr.querySelector('.ef-hq').value;tr.querySelector('.ef-hq').innerHTML=hqOptionsHtml(depts,h,b);tr.querySelector('.ef-dept').innerHTML=childDeptOptionsHtml(depts,tr.querySelector('.ef-hq').value,'',b);};
+    tr.querySelector('.ef-branch').onchange=refresh;tr.querySelector('.ef-hq').onchange=()=>{const b=tr.querySelector('.ef-branch').value,h=tr.querySelector('.ef-hq').value;tr.querySelector('.ef-dept').innerHTML=childDeptOptionsHtml(depts,h,'',b);};
+  }
+  function renumberEmpRegRows(){
+    document.querySelectorAll('#empRegBody tr').forEach((tr, i) => {
+      tr.querySelector('.empRegSeq').textContent = i + 1;
+    });
+  }
+
+  document.getElementById('empRegAddBtn').onclick = () => addEmpRegRow();
+
+  document.getElementById('empRegRemoveBtn').onclick = () => {
+    document.querySelectorAll('#empRegBody tr').forEach(tr => {
+      if(tr.querySelector('.empRegCheck').checked) tr.remove();
+    });
+    renumberEmpRegRows();
+  };
+
+  document.getElementById('empTemplateBtn').onclick = () => {
+    const headers = ['이름','영문명','주민등록번호','전화번호','비상연락처','비상연락처관계','이메일','최초입사일','입사일','사업장','부서','직급','직책'];
+    const ws = XLSX.utils.aoa_to_sheet([headers]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '직원등록');
+    XLSX.writeFile(wb, 'mouff_직원등록_양식.xlsx');
+  };
+
+  document.getElementById('empExcelInput').onchange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const msgEl = document.getElementById('empRegMsg');
+    try{
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      const depts = await fetchDepts();
+      const deptByName = {};
+      depts.forEach(d => deptByName[d.name] = d.id);
+      const branches=await fetchBranches(),branchByName={};branches.forEach(b=>branchByName[b.data.branchName]=b.id);
+      for(const row of rows){
+        function fmtDate(v){
+          if(!v) return '';
+          if(v instanceof Date) return v.toISOString().slice(0,10);
+          return String(v).trim();
+        }
+        await addEmpRegRow({
+          name: row['이름'] || '',
+          englishName: row['영문명'] || '',
+          ssn: row['주민등록번호'] || '',
+          phone: row['전화번호'] || '',
+          emergencyPhone: row['비상연락처'] || '',
+          emergencyRelation: row['비상연락처관계'] || '',
+          email: row['이메일'] || '',
+          firstHireDate: fmtDate(row['최초입사일']),
+          hireDate: fmtDate(row['입사일']),
+          branchId: branchByName[row['사업장']] || '',
+          deptId: deptByName[row['부서']] || '',
+          rank: row['직급'] || '',
+          position: row['직책'] || ''
+        });
+      }
+      renumberEmpRegRows();
+      msgEl.className = 'msg success';
+      msgEl.textContent = rows.length + '건을 표에 불러왔어요. 확인 후 체크해서 계정발급 해주세요.';
+    }catch(e){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '엑셀 파일을 읽지 못했어요. 양식을 확인해 주세요.';
+    }
+    e.target.value = '';
+  };
+
+  function randomPassword(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let out = '';
+    for(let i=0;i<8;i++) out += chars[Math.floor(Math.random()*chars.length)];
+    return out;
+  }
+
+  async function getNextEmpNo(dateStr){
+    const year = dateStr ? new Date(dateStr).getFullYear() : new Date().getFullYear();
+    const key = 'empSeq:' + year;
+    let seq = 1;
+    try{
+      const rec = await window.storage.get(key).catch(() => null);
+      if(rec) seq = JSON.parse(rec.value).seq + 1;
+    }catch(e){ /* ignore */ }
+    await window.storage.set(key, JSON.stringify({ seq }));
+    return String(year) + String(seq).padStart(4, '0');
+  }
+
+  document.getElementById('empIssueBtn').onclick = async () => {
+    const msgEl = document.getElementById('empRegMsg');
+    const checkedRows = Array.from(document.querySelectorAll('#empRegBody tr')).filter(tr => tr.querySelector('.empRegCheck').checked);
+    if(!checkedRows.length){
+      msgEl.className = 'msg error';
+      msgEl.textContent = '발급할 행을 체크해 주세요.';
+      return;
+    }
+    const btn = document.getElementById('empIssueBtn');
+    btn.disabled = true;
+    btn.textContent = '발급 중...';
+
+    const issued = [];
+    const failed = [];
+
+    for(const tr of checkedRows){
+      const name = tr.querySelector('.ef-name').value.trim();
+      const englishName=tr.querySelector('.ef-english').value.trim();
+      const ssn = tr.querySelector('.ef-ssn').value.trim();
+      const phone = tr.querySelector('.ef-phone').value.trim();
+      const emergencyPhone=tr.querySelector('.ef-emergency').value.trim();
+      const email = tr.querySelector('.ef-email').value.trim();
+      const firstHireDate = tr.querySelector('.ef-firstHire').value;
+      const hireDate = tr.querySelector('.ef-hire').value;
+      const branchId=tr.querySelector('.ef-branch').value;
+      const hqId=tr.querySelector('.ef-hq').value;
+      const deptId = tr.querySelector('.ef-dept').value;
+      const rank = tr.querySelector('.ef-rank').value;
+      const position = tr.querySelector('.ef-position').value;
+
+      const missing = [];
+      if(!name) missing.push('이름');
+      if(!ssn) missing.push('주민번호');
+      if(!phone) missing.push('전화번호');
+      if(!email) missing.push('이메일');
+      if(!firstHireDate) missing.push('최초입사일');
+      if(!rank) missing.push('직급');
+      if(missing.length){
+        failed.push((name || '(이름없음)') + ' — ' + missing.join(', ') + ' 누락');
+        continue;
+      }
+
+      try{
+        const empNo = await getNextEmpNo(hireDate || firstHireDate);
+        let loginId = empNo;
+        let n = 1;
+        while(await window.storage.get('account:' + loginId).catch(() => null)){
+          loginId = empNo + '_' + n; n++;
+        }
+        const pw = randomPassword();
+        const secret = generateSecret();
+        await window.storage.set('account:' + loginId, JSON.stringify({
+          pw, name, englishName, ssn, phone, emergencyPhone, emergencyRelation, email, firstHireDate, hireDate, branchId, hqId, deptId, rank, position, employmentStatus:'재직',
+          role: 'employee', empNo, verified: false, totpSecret: secret
+        }));
+        issued.push({ name, loginId, pw, empNo, secret });
+        logActivity('계정발급', name, '사원번호 ' + empNo + ' / 아이디 ' + loginId);
+        tr.remove();
+      }catch(e){
+        failed.push(name + ' — 저장 중 오류');
+      }
+    }
+
+    renumberEmpRegRows();
+
+    if(issued.length){
+      msgEl.className = 'msg success';
+      msgEl.innerHTML = issued.length + '명 계정발급 완료.<br>' +
+        issued.map(x => x.name + ' — 아이디: ' + x.loginId + ' / 초기비번: ' + x.pw + ' / 사원번호: ' + x.empNo + ' / OTP키: ' + x.secret).join('<br>') +
+        (failed.length ? '<br>실패:<br>' + failed.join('<br>') : '');
+    } else {
+      msgEl.className = 'msg error';
+      msgEl.innerHTML = '발급된 계정이 없어요.<br>' + failed.join('<br>');
+    }
+    renderEmployeeList();
+
+    btn.disabled = false;
+    btn.textContent = '계정발급';
+  };
+
+  /* ---- 직원목록 ---- */
+  function parseBirthFromSSN(ssn){
+    if(!ssn) return '';
+    const digits = ssn.replace(/[^0-9]/g, '');
+    if(digits.length < 7) return '';
+    const yy = digits.slice(0,2), mm = digits.slice(2,4), dd = digits.slice(4,6);
+    const genderDigit = digits[6];
+    let century = '19';
+    if(genderDigit === '3' || genderDigit === '4' || genderDigit === '7' || genderDigit === '8') century = '20';
+    if(genderDigit === '9' || genderDigit === '0') century = '18';
+    return century + yy + '-' + mm + '-' + dd;
+  }
+
+  document.querySelectorAll('.empMainTab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.empMainTab').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('empRegisterPanel').style.display=b.dataset.empTab==='register'?'block':'none';document.getElementById('empListPanel').style.display=b.dataset.empTab==='list'?'block':'none';if(b.dataset.empTab==='list')renderEmployeeList();});
+  document.getElementById('empSearchBtn').onclick=()=>{empSearchState={from:document.getElementById('empFilterFrom').value,to:document.getElementById('empFilterTo').value,name:document.getElementById('empFilterName').value.trim(),status:document.getElementById('empFilterStatus').value};renderEmployeeList();};
+  document.getElementById('empSearchResetBtn').onclick=()=>{['empFilterFrom','empFilterTo','empFilterName'].forEach(id=>document.getElementById(id).value='');document.getElementById('empFilterStatus').value='';empSearchState={from:'',to:'',name:'',status:''};renderEmployeeList();};
+  document.getElementById('empRegCheckAll').onchange=e=>document.querySelectorAll('.empRegCheck').forEach(c=>c.checked=e.target.checked);document.getElementById('empListCheckAll').onchange=e=>document.querySelectorAll('.empListCheck').forEach(c=>c.checked=e.target.checked);
+
+  async function openResignModal(loginId, name){
+    const date = await new Promise(resolve => {
+      const modal = document.getElementById('resignModal');
+      document.getElementById('resignModalName').textContent = name;
+      document.getElementById('resignDateInput').value = '';
+      modal.style.display = 'flex';
+      const confirmBtn = document.getElementById('resignConfirmBtn');
+      const cancelBtn = document.getElementById('resignCancelBtn');
+      const cleanup = (val) => { modal.style.display = 'none'; confirmBtn.onclick = null; cancelBtn.onclick = null; resolve(val); };
+      confirmBtn.onclick = () => {
+        const val = document.getElementById('resignDateInput').value;
+        if(!val) return;
+        cleanup(val);
+      };
+      cancelBtn.onclick = () => cleanup(null);
+    });
+    if(!date) return;
+    try{
+      const rec = await window.storage.get('account:' + loginId);
+      const data = JSON.parse(rec.value);
+      data.resignDate = date;
+      await window.storage.set('account:' + loginId, JSON.stringify(data));
+      logActivity('퇴사처리', name, '퇴사일 ' + date);
+      renderEmployeeList();
+    }catch(e){ /* ignore */ }
+  }
+
+  async function resetEmployeePw(loginId, name){
+    const ok = await showConfirm('"' + name + '"님의 비밀번호를 초기화할까요?');
+    if(!ok) return;
+    try{
+      const rec = await window.storage.get('account:' + loginId);
+      const data = JSON.parse(rec.value);
+      const newPw = randomPassword();
+      data.pw = newPw;
+      await window.storage.set('account:' + loginId, JSON.stringify(data));
+      logActivity('비밀번호초기화', name, '');
+      await showAlert(name + '님의 새 비밀번호: ' + newPw);
+    }catch(e){
+      showAlert('초기화 중 문제가 생겼어요.');
+    }
+  }
+
+  async function resetEmployeeOtp(loginId, name){
+    const ok = await showConfirm('"' + name + '"님의 OTP 키를 새로 만들까요?\n기존 인증 앱에 등록된 키는 더 이상 작동하지 않아요.');
+    if(!ok) return;
+    try{
+      const rec = await window.storage.get('account:' + loginId);
+      const data = JSON.parse(rec.value);
+      const newSecret = generateSecret();
+      data.totpSecret = newSecret;
+      await window.storage.set('account:' + loginId, JSON.stringify(data));
+      logActivity('OTP재설정', name, '');
+      await showAlert(name + '님의 새 OTP 키: ' + newSecret + '\n인증 앱에 수동으로 다시 등록해 주세요.');
+    }catch(e){
+      showAlert('재설정 중 문제가 생겼어요.');
+    }
+  }
+
+  async function viewEmployeeOtp(loginId, name){
+    try{
+      const rec = await window.storage.get('account:' + loginId);
+      const data = JSON.parse(rec.value);
+      showAlert(name + '님의 현재 OTP 키: ' + (data.totpSecret || '(없음)'));
+    }catch(e){
+      showAlert('조회 중 문제가 생겼어요.');
+    }
+  }
+
+  /* ---- 변경이력 ---- */
+  async function fetchActivities(){
+    const rows = [];
+    try{
+      const listResult = await window.storage.list('activity:');
+      const keys = listResult ? listResult.keys : [];
+      for(const key of keys){
+        const rec = await window.storage.get(key).catch(() => null);
+        if(!rec) continue;
+        rows.push(JSON.parse(rec.value));
+      }
+    }catch(e){ /* ignore */ }
+    rows.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+    return rows;
+  }
+
+  async function renderActivityList(){
+    const listEl = document.getElementById('activityList');
+    listEl.innerHTML = '<tr><td colspan="5" class="employeeList-empty">불러오는 중...</td></tr>';
+    const rows = await fetchActivities();
+    if(!rows.length){
+      listEl.innerHTML = '<tr><td colspan="5" class="employeeList-empty">기록된 이력이 없어요.</td></tr>';
+      return;
+    }
+    listEl.innerHTML = rows.map(r =>
+      '<tr><td>' + formatRequestedAt(r.at) + '</td><td>' + (r.actor || '-') + '</td><td>' + r.action + '</td><td>' + r.target + '</td><td>' + (r.detail || '') + '</td></tr>'
+    ).join('');
+  }
+
+  document.getElementById('activityExcelBtn').onclick = async () => {
+    const rows = await fetchActivities();
+    exportRowsToExcel('mouff_변경이력.xlsx', ['일시','사용자','행위','대상','상세'],
+      rows.map(r => [formatRequestedAt(r.at), r.actor || '-', r.action, r.target, r.detail || '']));
+  };
+
+  document.getElementById('branchExcelBtn').onclick = async () => {
+    const branches = await fetchBranches();
+    exportRowsToExcel('mouff_사업장목록.xlsx',
+      ['사업장구분명','상호','사업자등록번호','대표자명','사업자구분','법인등록번호','개업연월일','소재지','업태','종목','상태','휴업시작일','휴업종료예정일','폐업일','대표사업장'],
+      branches.map(b => [b.data.branchName, b.data.bizName, b.data.bizNumber, b.data.ceoName, b.data.bizKind, b.data.corpNumber || '', b.data.openDate, b.data.address, b.data.bizType, b.data.bizItem,b.data.status||'영업중',b.data.pauseStart||'',b.data.pauseEnd||'',b.data.closeDate||'', b.data.isHQ ? 'Y' : 'N']));
+  };
+
+  document.getElementById('deptExcelBtn').onclick = async () => {
+    const depts = await fetchDepts();
+    exportRowsToExcel('mouff_조직도.xlsx', ['조직명','조직유형','상태'], depts.map(d => [d.name,d.data?d.data.type||'':'',d.data?d.data.status||'':'' ]));
+  };
+
+  document.getElementById('shExcelBtn').onclick = async () => {
+    const listResult = await window.storage.list('shareholder:');
+    const keys = listResult ? listResult.keys : [];
+    const rows = [];
+    for(const key of keys){
+      const rec = await window.storage.get(key).catch(() => null);
+      if(!rec) continue;
+      const d = JSON.parse(rec.value);
+      rows.push([d.name, d.shares || '', d.ratio, d.note || '']);
+    }
+    exportRowsToExcel('mouff_주주현황.xlsx', ['주주명','주식수','지분율(%)','비고'], rows);
+  };
+
+  document.getElementById('hrCardTemplateBtn').onclick=()=>{const wb=XLSX.utils.book_new(),sheets={'기본정보':['사원번호','주소','비상연락처','비상연락처관계'],'연봉':['사원번호','적용시작일','적용종료일','계약연봉','기본급','고정수당','식대','기타고정급','변경사유'],'급여세무':['사원번호','급여은행','급여계좌번호','예금주','부양가족수','자녀수','4대보험상태','비과세정보','비고'],'학력':['사원번호','학교구분','학교명','전공','학위','입학일','졸업일','상태'],'경력':['사원번호','회사명','부서','직급·직책','입사일','퇴사일','담당업무','퇴사사유'],'자격교육':['사원번호','구분','명칭','기관','취득·수료일','만료일','자격번호·교육시간']};for(const [n,h] of Object.entries(sheets))XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([h]),n);XLSX.writeFile(wb,'mouff_인사카드_일괄업로드_양식.xlsx');};
+  document.getElementById('hrCardExcelInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'}),accounts=await getRecords('account:'),byEmp=Object.fromEntries(accounts.filter(x=>x.data.empNo).map(x=>[x.data.empNo,x]));let ok=0,err=[];const mapTab={'연봉':'연봉','급여세무':'급여·세무','학력':'학력','경력':'경력','자격교육':'자격·교육'};for(const sn of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:''});for(const row of rows){const emp=byEmp[String(row['사원번호']).trim()];if(!emp){err.push(sn+' - '+row['사원번호']+' 존재하지 않는 사원번호');continue;}if(sn==='기본정보'){const r=await window.storage.get('account:'+emp.id),d=JSON.parse(r.value);d.address=row['주소']||d.address;d.emergencyPhone=row['비상연락처']||d.emergencyPhone;d.emergencyRelation=row['비상연락처관계']||d.emergencyRelation;await window.storage.set('account:'+emp.id,JSON.stringify(d));ok++;}else if(mapTab[sn]){const data={...row};delete data['사원번호'];await window.storage.set('hrProfile:'+emp.id+':'+mapTab[sn]+':'+Date.now()+Math.random(),JSON.stringify(data));ok++;}}}logActivity('일괄업로드','인사카드',ok+'건');await showAlert('인사카드 업로드 완료: 정상 '+ok+'건'+(err.length?' / 오류 '+err.length+'건\n'+err.slice(0,10).join('\n'):''));renderEmployeeList();}catch(ex){showAlert('인사카드 Excel을 읽지 못했어요.');}e.target.value='';};
+
+  document.getElementById('empListExcelBtn').onclick = async () => {
+    const listResult = await window.storage.list('account:');
+    const keys = listResult ? listResult.keys : [];
+    const rows = [];
+    for(const key of keys){
+      const rec = await window.storage.get(key).catch(() => null);
+      if(!rec) continue;
+      const d = JSON.parse(rec.value);
+      if(!d.empNo) continue;
+      rows.push([d.empNo,d.name,d.englishName||'',parseBirthFromSSN(d.ssn)||'',d.phone||'',d.emergencyPhone||'',d.emergencyRelation||'',d.email||'',d.firstHireDate||'',d.hireDate||'',d.rank||'',d.position||'',d.verified?'인증완료':'미인증',d.resignDate?'퇴사':(d.employmentStatus||'재직'),d.totpSecret||'']);
+    }
+    exportRowsToExcel('mouff_직원목록.xlsx', ['사원번호','이름','영문명','생년월일','전화번호','비상연락처','비상연락처관계','이메일','최초입사일','입사일','직급','직책','인증','상태','OTP비밀키(프로토타입)'], rows);
+  };
+
+
+  /* ---- 연결형 권한 아키텍처 ---- */
+  const PERMISSION_CATALOG=[
+    ['직원관리','직원 조회','HR.EMPLOYEE.VIEW','중요','직원 기본정보 조회'],['직원관리','직원 수정','HR.EMPLOYEE.EDIT','민감','직원 인사정보 수정'],['직원관리','주민번호 원문열람','HR.EMPLOYEE.SSN_VIEW','매우 민감','주민번호 원문 열람'],
+    ['근태관리','근태 조회','HR.ATTENDANCE.VIEW','중요','근태내역 조회'],['근태관리','근태 수정','HR.ATTENDANCE.EDIT','민감','근태 데이터 수정'],
+    ['급여관리','급여 조회','HR.PAYROLL.VIEW','매우 민감','담당 범위 급여 조회'],['급여관리','급여 계산','HR.PAYROLL.CALCULATE','매우 민감','급여 계산 실행'],['급여관리','급여 수정','HR.PAYROLL.EDIT','매우 민감','급여 계산값 수정'],['급여관리','급여 확정','HR.PAYROLL.CONFIRM','매우 민감','급여 마감/확정'],['급여관리','급여 다운로드','HR.PAYROLL.EXPORT','매우 민감','급여자료 파일 다운로드'],
+    ['회사관리','회사정보 조회','COMPANY.VIEW','일반','회사/사업장 정보 조회'],['회사관리','회사정보 수정','COMPANY.EDIT','중요','회사/사업장 정보 수정'],['보안/권한','권한 관리','SECURITY.PERMISSION_ADMIN','매우 민감','권한정책/부여 관리']
+  ];
+  function renderPermissionCatalog(){const b=document.getElementById('permissionCatalogList');if(b)b.innerHTML=PERMISSION_CATALOG.map(p=>'<tr><td>'+p[0]+'</td><td><b>'+p[1]+'</b></td><td><code>'+p[2]+'</code></td><td>'+p[3]+'</td><td>'+p[4]+'</td></tr>').join('');}
+  async function renderPermissionPickers(){const pp=document.getElementById('permissionPicker');if(pp){const areas=[...new Set(PERMISSION_CATALOG.map(p=>p[0]))];pp.innerHTML=areas.map(a=>'<div style="margin-bottom:12px"><b>'+a+'</b><div class="checkLine" style="margin-top:7px">'+PERMISSION_CATALOG.filter(p=>p[0]===a).map(p=>'<label><input type="checkbox" class="permissionPick" value="'+p[2]+'"> '+p[1]+'</label>').join('')+'</div></div>').join('');}
+    const org=document.getElementById('policyOrgPicker');if(org){const ds=await fetchDepts();org.innerHTML=ds.length?ds.map(d=>'<label style="display:block;margin:6px 0"><input type="checkbox" class="policyOrgPick" value="'+d.id+'"> '+esc(d.name)+' <span class="sub">['+esc(d.data.type||'')+']</span></label>').join(''):'<span class="sub">조직도에 등록된 조직이 없어요.</span>';}
+    const job=document.getElementById('policyJobPicker');if(job){const jobs=(await masterRows('직무')).filter(x=>x.data.status==='사용');job.innerHTML=jobs.length?jobs.map(x=>'<label style="display:block;margin:6px 0"><input type="checkbox" class="policyJobPick" value="'+x.id+'"> '+esc(x.data.name)+'</label>').join(''):'<span class="sub">조직·인사 체계에서 직무를 먼저 등록해 주세요.</span>';}
+    const pg=document.getElementById('policyGroup');if(pg){const groups=(await getRecords('permissionGroup:')).filter(x=>x.data.status==='사용');const old=pg.value;pg.innerHTML='<option value="">선택</option>'+groups.map(x=>'<option value="'+x.id+'">'+esc(x.data.name)+'</option>').join('');if(groups.some(x=>x.id===old))pg.value=old;}}
+  async function renderPermissionGroups(){const rows=await getRecords('permissionGroup:'),b=document.getElementById('permGroupList');if(!b)return;b.innerHTML=rows.length?rows.map(x=>'<tr><td><b>'+esc(x.data.name)+'</b></td><td>'+esc((x.data.permissions||[]).map(k=>{const p=PERMISSION_CATALOG.find(z=>z[2]===k);return p?p[1]:k}).join(', '))+'</td><td>'+esc(x.data.scope)+'</td><td>'+esc(x.data.status)+'</td></tr>').join(''):'<tr><td colspan="4" class="employeeList-empty">등록된 권한 그룹이 없어요.</td></tr>';await renderPermissionPickers();}
+  document.getElementById('permGroupSaveBtn').onclick=async()=>{const name=document.getElementById('permGroupName').value.trim(),permissions=Array.from(document.querySelectorAll('.permissionPick:checked')).map(x=>x.value);if(!name||!permissions.length){showAlert('그룹명과 포함할 기능 권한을 선택해 주세요.');return;}const d={name,permissions,scope:document.getElementById('permGroupScope').value,status:document.getElementById('permGroupStatus').value};await window.storage.set('permissionGroup:pg'+Date.now(),JSON.stringify(d));logActivity('등록',name,'권한그룹 '+permissions.length+'개 Permission');document.getElementById('permGroupName').value='';document.querySelectorAll('.permissionPick').forEach(x=>x.checked=false);renderPermissionGroups();};
+  async function renderPermissionPolicies(){const rows=await getRecords('permissionPolicy:'),groups=await getRecords('permissionGroup:'),ds=await fetchDepts(),jobs=await masterRows('직무'),gm=Object.fromEntries(groups.map(x=>[x.id,x.data.name])),dm=Object.fromEntries(ds.map(x=>[x.id,x.name])),jm=Object.fromEntries(jobs.map(x=>[x.id,x.data.name])),b=document.getElementById('policyList');if(!b)return;b.innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc(x.data.name)+'</td><td><b>'+esc(gm[x.data.groupId]||'삭제된 Role')+'</b></td><td>'+esc((x.data.orgIds||[]).map(id=>dm[id]||'삭제된 조직').join(', ')||'제한없음')+'</td><td>'+esc((x.data.jobIds||[]).map(id=>jm[id]||'삭제된 직무').join(', ')||'제한없음')+'</td><td>'+esc(x.data.sensitivity)+'</td><td>'+esc(x.data.exception)+'</td></tr>').join(''):'<tr><td colspan="6" class="employeeList-empty">등록된 정책이 없어요.</td></tr>';}
+  document.getElementById('policySaveBtn').onclick=async()=>{const name=document.getElementById('policyName').value.trim(),groupId=document.getElementById('policyGroup').value;if(!name||!groupId){showAlert('정책명과 대상 권한그룹을 선택해 주세요.');return;}const d={name,groupId,orgIds:Array.from(document.querySelectorAll('.policyOrgPick:checked')).map(x=>x.value),jobIds:Array.from(document.querySelectorAll('.policyJobPick:checked')).map(x=>x.value),sensitivity:document.getElementById('policySensitivity').value,exception:document.getElementById('policyException').value};await window.storage.set('permissionPolicy:pp'+Date.now(),JSON.stringify(d));logActivity('등록',name,'권한 신청자격 정책');document.getElementById('policyName').value='';document.querySelectorAll('.policyOrgPick,.policyJobPick').forEach(x=>x.checked=false);renderPermissionPolicies();};
+  async function renderPermissionRequestsAdmin(){const rows=await getRecords('permissionRequest:'),b=document.getElementById('permissionRequestAdminList');if(!b)return;b.innerHTML=rows.length?rows.map(x=>'<tr><td>'+esc((x.data.requestedAt||'').slice(0,10))+'</td><td>'+esc(x.data.requester||'-')+'</td><td>조직정보 연동</td><td>'+esc(x.data.group)+'</td><td>'+esc(x.data.scope)+'</td><td>'+esc((x.data.from||'-')+' ~ '+(x.data.to||''))+'</td><td>'+esc(x.data.status)+'</td></tr>').join(''):'<tr><td colspan="7" class="employeeList-empty">권한신청 내역이 없어요.</td></tr>';}
+  document.getElementById('grantSearchBtn').onclick=async()=>{const q=document.getElementById('grantSearch').value.trim(),rows=await getRecords('account:'),x=rows.find(r=>r.id===q||r.data.empNo===q||(r.data.name||'').includes(q));document.getElementById('grantResult').innerHTML=x?'<b>'+esc(x.data.name||x.id)+'</b><br>System Level: '+esc(x.data.level||'L1')+'<br>기본권한: 전자결재 · 문서함 · 권한신청 · MY<br>조직역할: 조직도 책임자 여부로 자동 계산<br>업무 Role: 승인된 권한그룹 기준<br>Permission / Scope: Role과 개별부여를 합산':'일치하는 직원을 찾지 못했어요.';};
+  renderPermissionCatalog();ensureMasterDefaults().then(async()=>{await renderMasterList();await renderPermissionGroups();await renderPermissionPolicies();});renderPermissionRequestsAdmin();
+
+  document.getElementById('loginPw').addEventListener('keydown', e=>{
+    if(e.key === 'Enter') document.getElementById('loginBtn').click();
+  });
+</script>
+</body>
+</html>
